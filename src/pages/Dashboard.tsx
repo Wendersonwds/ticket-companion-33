@@ -8,30 +8,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, role, isRoleLoading } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total: 0, open: 0, done: 0 });
 
   useEffect(() => {
     if (!loading && !user) { navigate('/auth'); return; }
+    if (!loading && !isRoleLoading && role === 'admin') { navigate('/admin'); return; }
     if (!user) return;
     (async () => {
       const clientId = await getClientId(user.id);
-      if (clientId) {
-        const s = await getTicketStats(clientId);
-        setStats(s);
-      }
+      if (clientId) setStats(await getTicketStats(clientId));
     })();
-  }, [user, loading, navigate]);
+  }, [user, loading, role, isRoleLoading, navigate]);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
+  if (loading || isRoleLoading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Sistema de Chamados</h1>
+        <h1 className="text-xl font-bold text-foreground">Meus Chamados</h1>
         <div className="flex items-center gap-3">
-          <Link to="/tickets"><Button variant="outline" size="sm">Chamados</Button></Link>
+          <Link to="/tickets"><Button variant="outline" size="sm">Ver Chamados</Button></Link>
           <Link to="/tickets/new"><Button size="sm">Novo Chamado</Button></Link>
           <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/auth'); }}>Sair</Button>
         </div>
@@ -49,7 +47,7 @@ const Dashboard = () => {
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Concluídos</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-success">{stats.done}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-green-600">{stats.done}</p></CardContent>
           </Card>
         </div>
       </main>

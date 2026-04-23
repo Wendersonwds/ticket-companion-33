@@ -14,25 +14,26 @@ const NewTicket = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [clientId, setClientId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState('bug');
-  const [priority, setPriority] = useState('media');
+  const [type, setType] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) { navigate('/auth'); return; }
-    if (user) getClientId(user.id).then(setClientId);
+    if (!loading && !user) navigate('/auth');
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientId) { toast({ title: 'Erro', description: 'Client não encontrado', variant: 'destructive' }); return; }
+    if (!type) { toast({ title: 'Erro', description: 'Selecione uma categoria', variant: 'destructive' }); return; }
+    if (!user) return;
+
     setSubmitting(true);
     try {
-      await createTicket({ title, description, type, priority, client_id: clientId });
-      toast({ title: 'Chamado criado!' });
+      const clientId = await getClientId(user.id);
+      if (!clientId) { toast({ title: 'Erro', description: 'Não foi possível identificar o cliente', variant: 'destructive' }); return; }
+      await createTicket({ title, description, type, priority: 'media', client_id: clientId });
+      toast({ title: 'Chamado criado com sucesso!' });
       navigate('/tickets');
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
@@ -41,31 +42,32 @@ const NewTicket = () => {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-lg mx-auto">
         <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">← Voltar</Button>
         <Card>
           <CardHeader><CardTitle>Novo Chamado</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input placeholder="Título" value={title} onChange={e => setTitle(e.target.value)} required />
-              <Textarea placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} required />
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bug">Bug</SelectItem>
-                  <SelectItem value="melhoria">Melhoria</SelectItem>
-                  <SelectItem value="novo_recurso">Novo Recurso</SelectItem>
-                  <SelectItem value="duvida">Dúvida</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="baixa">Baixa</SelectItem>
-                  <SelectItem value="media">Média</SelectItem>
-                  <SelectItem value="alta">Alta</SelectItem>
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Categoria *</label>
+                <Select value={type} onValueChange={setType}>
+                  <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bug">Bug</SelectItem>
+                    <SelectItem value="melhoria">Melhoria</SelectItem>
+                    <SelectItem value="novo_projeto">Novo Projeto</SelectItem>
+                    <SelectItem value="duvida">Dúvida</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Título *</label>
+                <Input placeholder="Resumo do chamado" value={title} onChange={e => setTitle(e.target.value)} required />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Descrição</label>
+                <Textarea placeholder="Detalhes (opcional)" value={description} onChange={e => setDescription(e.target.value)} rows={3} />
+              </div>
               <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting ? 'Criando...' : 'Criar Chamado'}
               </Button>

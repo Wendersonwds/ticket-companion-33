@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp } from '@/services/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,8 +22,14 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        await signIn(email, password);
-        navigate('/dashboard');
+        const data = await signIn(email, password);
+        // Check role to redirect
+        const { data: userData } = await supabase.from('users').select('role').eq('id', data.user.id).single();
+        if (userData?.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         await signUp(email, password, name);
         toast({ title: 'Cadastro realizado!', description: 'Verifique seu email para confirmar.' });
