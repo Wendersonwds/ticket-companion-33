@@ -1,18 +1,40 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getTicketById } from '@/services/tickets';
+import { getTicketById, updateTicketStatus } from '@/services/tickets';
 import { getMessages, sendMessage, subscribeToMessages } from '@/services/messages';
 import { uploadFile, getAttachments } from '@/services/upload';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import {
+  ArrowLeft, Clock, TrendingUp, CheckCircle2, AlertTriangle,
+  Paperclip, Send, Shield, User,
+} from 'lucide-react';
+
+const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700', icon: Clock },
+  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700', icon: TrendingUp },
+  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
+};
+
+const priorityConfig: Record<string, { label: string; color: string }> = {
+  baixa: { label: 'Baixa', color: 'bg-muted text-muted-foreground' },
+  media: { label: 'Média', color: 'bg-warning/10 text-warning' },
+  alta: { label: 'Alta', color: 'bg-destructive/10 text-destructive' },
+};
+
+const typeLabels: Record<string, string> = {
+  bug: 'Bug', melhoria: 'Melhoria', novo_projeto: 'Novo Projeto', duvida: 'Dúvida',
+};
 
 const TicketDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [ticket, setTicket] = useState<any>(null);
@@ -21,6 +43,7 @@ const TicketDetail = () => {
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isAdmin = role === 'admin';
 
   useEffect(() => {
     if (!loading && !user) { navigate('/auth'); return; }
@@ -52,6 +75,17 @@ const TicketDetail = () => {
     } finally { setSending(false); }
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!id) return;
+    try {
+      await updateTicketStatus(id, newStatus);
+      setTicket((prev: any) => ({ ...prev, status: newStatus }));
+      toast({ title: 'Status atualizado!' });
+    } catch {
+      toast({ title: 'Erro ao atualizar status', variant: 'destructive' });
+    }
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !id) return;
@@ -67,63 +101,187 @@ const TicketDetail = () => {
 
   if (!ticket) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
 
-  return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-3xl mx-auto space-y-4">
-        <Button variant="ghost" onClick={() => navigate('/tickets')}>← Voltar</Button>
+  const sc = statusConfig[ticket.status] ?? statusConfig.aberto;
+  const pc = priorityConfig[ticket.priority];
+  const StatusIcon = sc.icon;
 
+  return (
+    <div className="min-h-screen bg-background p-4 sm:p-6">
+      <div className="max-w-4xl mx-auto space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate(isAdmin ? '/admin/tickets' : '/tickets')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-foreground truncate">{ticket.title}</h1>
+            <p className="text-xs text-muted-foreground">
+              #{ticket.id?.slice(0, 8)} · {typeLabels[ticket.type] ?? ticket.type} · {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+        </div>
+
+        {/* Status + Priority + Admin Controls */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">{ticket.title}</CardTitle>
-              <div className="flex gap-2">
-                <Badge variant="outline">{ticket.status}</Badge>
-                <Badge variant="secondary">{ticket.priority}</Badge>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Current status display */}
+              <div className="flex items-center gap-3 flex-1">
+                <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${sc.color}`}>
+                  <StatusIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Status atual</p>
+                  <Badge className={`${sc.color} text-sm`}>{sc.label}</Badge>
+                </div>
+                <Separator orientation="vertical" className="h-10 mx-2 hidden sm:block" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Prioridade</p>
+                  <Badge className={pc?.color ?? ''}>{pc?.label ?? ticket.priority}</Badge>
+                </div>
+                <Separator orientation="vertical" className="h-10 mx-2 hidden sm:block" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Tipo</p>
+                  <p className="text-sm font-medium text-foreground">{typeLabels[ticket.type] ?? ticket.type}</p>
+                </div>
               </div>
+
+              {/* Admin: change status */}
+              {isAdmin && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 bg-primary/10 px-2 py-1 rounded-md">
+                    <Shield className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-medium text-primary">Admin</span>
+                  </div>
+                  <Select value={ticket.status} onValueChange={handleStatusChange}>
+                    <SelectTrigger className="w-40 h-9">
+                      <SelectValue placeholder="Alterar status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aberto">Aberto</SelectItem>
+                      <SelectItem value="andamento">Em Andamento</SelectItem>
+                      <SelectItem value="concluido">Concluído</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Description */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Descrição</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{ticket.description}</p>
-            <p className="text-xs text-muted-foreground mt-2">Tipo: {ticket.type} · Criado em: {new Date(ticket.created_at).toLocaleDateString('pt-BR')}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ticket.description}</p>
           </CardContent>
         </Card>
 
-        {/* Attachments */}
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Anexos</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {attachments.map(a => (
-              <a key={a.id} href={a.file_url} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary underline">
-                {a.file_name}
-              </a>
-            ))}
-            <Input type="file" onChange={handleUpload} />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Chat - takes 2/3 */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                Mensagens
+                <Badge variant="secondary" className="text-xs">{messages.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-96 overflow-y-auto space-y-3 mb-4 p-2 bg-muted/30 rounded-lg">
+                {messages.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Nenhuma mensagem ainda.</p>}
+                {messages.map((m, i) => {
+                  const isMe = m.sender_id === user?.id;
+                  return (
+                    <div key={m.id ?? i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      <div className="flex items-end gap-2 max-w-[80%]">
+                        {!isMe && (
+                          <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className={`rounded-2xl px-3 py-2 text-sm ${isMe ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-card text-foreground border rounded-bl-md'}`}>
+                          {m.message}
+                          <p className="text-[10px] opacity-60 mt-1">
+                            {new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        {isMe && (
+                          <div className={`h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 ${isAdmin ? 'bg-primary/10' : 'bg-accent'}`}>
+                            {isAdmin
+                              ? <Shield className="h-3.5 w-3.5 text-primary" />
+                              : <User className="h-3.5 w-3.5 text-accent-foreground" />
+                            }
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder={isAdmin ? "Responder como Admin..." : "Digite uma mensagem..."}
+                  value={newMsg}
+                  onChange={e => setNewMsg(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                />
+                <Button onClick={handleSend} disabled={sending} size="icon">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Chat */}
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Mensagens</CardTitle></CardHeader>
-          <CardContent>
-            <div className="max-h-80 overflow-y-auto space-y-3 mb-4 p-2">
-              {messages.length === 0 && <p className="text-sm text-muted-foreground text-center">Nenhuma mensagem ainda.</p>}
-              {messages.map((m, i) => (
-                <div key={m.id ?? i} className={`flex ${m.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${m.sender_id === user?.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
-                    {m.message}
-                    <p className="text-[10px] opacity-60 mt-1">{new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-                  </div>
+          {/* Sidebar info */}
+          <div className="space-y-4">
+            {/* Attachments */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" /> Anexos
+                  <Badge variant="secondary" className="text-xs">{attachments.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {attachments.length === 0 && <p className="text-xs text-muted-foreground">Nenhum anexo.</p>}
+                {attachments.map(a => (
+                  <a key={a.id} href={a.file_url} target="_blank" rel="noopener noreferrer"
+                    className="block text-sm text-primary underline truncate hover:opacity-80">
+                    {a.file_name}
+                  </a>
+                ))}
+                <Separator className="my-2" />
+                <Input type="file" onChange={handleUpload} className="text-xs" />
+              </CardContent>
+            </Card>
+
+            {/* Ticket Info */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Informações</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Criado em</span>
+                  <span className="font-medium text-foreground">{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-            <div className="flex gap-2">
-              <Input placeholder="Digite uma mensagem..." value={newMsg} onChange={e => setNewMsg(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()} />
-              <Button onClick={handleSend} disabled={sending}>Enviar</Button>
-            </div>
-          </CardContent>
-        </Card>
+                {ticket.updated_at && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Atualizado</span>
+                    <span className="font-medium text-foreground">{new Date(ticket.updated_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">ID</span>
+                  <span className="font-mono text-xs text-foreground">{ticket.id?.slice(0, 8)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
