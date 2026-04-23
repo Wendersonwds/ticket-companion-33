@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { ensureUserAndClientExist } from '@/services/ensureProfile';
 
 export async function signUp(email: string, password: string, name: string) {
   const { data, error } = await supabase.auth.signUp({ email, password });
@@ -7,11 +8,13 @@ export async function signUp(email: string, password: string, name: string) {
   const userId = data.user?.id;
   if (!userId) throw new Error('User ID não encontrado');
 
-  const { error: userErr } = await supabase.from('users').insert({ id: userId, name, role: 'client' });
-  if (userErr) console.log('Erro ao criar user:', userErr.message);
+  // Ensure profile records exist immediately after signup
+  await ensureUserAndClientExist(userId, email);
 
-  const { error: clientErr } = await supabase.from('clients').insert({ user_id: userId });
-  if (clientErr) console.log('Erro ao criar client:', clientErr.message);
+  // Update name if provided
+  if (name) {
+    await supabase.from('users').update({ name }).eq('id', userId);
+  }
 
   return data;
 }
@@ -19,6 +22,10 @@ export async function signUp(email: string, password: string, name: string) {
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) { console.log('Erro no login:', error.message); throw error; }
+
+  // Ensure profile records exist on login
+  await ensureUserAndClientExist(data.user.id, data.user.email);
+
   return data;
 }
 
