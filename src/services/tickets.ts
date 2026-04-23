@@ -27,8 +27,17 @@ export async function getTicketById(id: string) {
 }
 
 export async function updateTicketStatus(id: string, status: string) {
-  const { error } = await supabase.from('tickets').update({ status }).eq('id', id);
+  const { error, data } = await supabase
+    .from('tickets')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select();
   if (error) { console.log('Erro ao atualizar status:', error.message); throw error; }
+  if (!data || data.length === 0) {
+    console.log('Nenhuma linha atualizada — verifique as RLS policies da tabela tickets (UPDATE)');
+    throw new Error('Não foi possível atualizar o status. Verifique as permissões no banco de dados.');
+  }
+  return data[0];
 }
 
 export async function getTicketStats(clientId: string) {
