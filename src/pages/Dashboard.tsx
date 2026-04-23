@@ -2,15 +2,34 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getClientId } from '@/services/users';
-import { getTicketStats } from '@/services/tickets';
+import { getTickets, getTicketStats } from '@/services/tickets';
 import { signOut } from '@/services/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Ticket, Clock, CheckCircle2, Plus, LogOut, ArrowRight,
+  AlertCircle, TrendingUp,
+} from 'lucide-react';
+
+const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700', icon: Clock },
+  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700', icon: TrendingUp },
+  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
+};
+
+const priorityConfig: Record<string, string> = {
+  baixa: 'bg-muted text-muted-foreground',
+  media: 'bg-warning/10 text-warning',
+  alta: 'bg-destructive/10 text-destructive',
+};
 
 const Dashboard = () => {
   const { user, loading, role, isRoleLoading } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total: 0, open: 0, done: 0 });
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) { navigate('/auth'); return; }
@@ -18,38 +37,133 @@ const Dashboard = () => {
     if (!user) return;
     (async () => {
       const clientId = await getClientId(user.id);
-      if (clientId) setStats(await getTicketStats(clientId));
+      if (clientId) {
+        const [s, t] = await Promise.all([getTicketStats(clientId), getTickets(clientId)]);
+        setStats(s);
+        setTickets(t);
+      }
+      setTicketsLoading(false);
     })();
   }, [user, loading, role, isRoleLoading, navigate]);
 
   if (loading || isRoleLoading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
 
+  const inProgress = tickets.filter(t => t.status === 'andamento').length;
+  const recentTickets = tickets.slice(0, 5);
+  const userName = user?.email?.split('@')[0] ?? 'Usuário';
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
       <header className="border-b bg-card px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Meus Chamados</h1>
-        <div className="flex items-center gap-3">
-          <Link to="/tickets"><Button variant="outline" size="sm">Ver Chamados</Button></Link>
-          <Link to="/tickets/new"><Button size="sm">Novo Chamado</Button></Link>
-          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/auth'); }}>Sair</Button>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Meus Chamados</h1>
+          <p className="text-sm text-muted-foreground">Olá, {userName} 👋</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/tickets/new">
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" /> Novo Chamado
+            </Button>
+          </Link>
+          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/auth'); }}>
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </header>
+
       <main className="max-w-5xl mx-auto p-6 space-y-6">
-        <h2 className="text-2xl font-semibold text-foreground">Dashboard</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-foreground">{stats.total}</p></CardContent>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Ticket className="h-4 w-4 text-primary" />
+                <span className="text-xs text-muted-foreground">Total</span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+            </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Abertos</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-primary">{stats.open}</p></CardContent>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="h-4 w-4 text-blue-500" />
+                <span className="text-xs text-muted-foreground">Abertos</span>
+              </div>
+              <p className="text-2xl font-bold text-blue-600">{stats.open}</p>
+            </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Concluídos</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-green-600">{stats.done}</p></CardContent>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-amber-500" />
+                <span className="text-xs text-muted-foreground">Em Andamento</span>
+              </div>
+              <p className="text-2xl font-bold text-amber-600">{inProgress}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span className="text-xs text-muted-foreground">Concluídos</span>
+              </div>
+              <p className="text-2xl font-bold text-green-600">{stats.done}</p>
+            </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions */}
+        {stats.total === 0 && (
+          <Card className="border-dashed border-2">
+            <CardContent className="p-8 text-center space-y-3">
+              <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground" />
+              <h3 className="font-semibold text-foreground">Nenhum chamado ainda</h3>
+              <p className="text-sm text-muted-foreground">Crie seu primeiro chamado para começar a acompanhar seus atendimentos.</p>
+              <Link to="/tickets/new">
+                <Button className="mt-2">Criar Primeiro Chamado</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recent Tickets */}
+        {recentTickets.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Chamados Recentes</h2>
+              <Link to="/tickets">
+                <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
+                  Ver Todos <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </div>
+
+            {recentTickets.map(t => {
+              const sc = statusConfig[t.status] ?? statusConfig.aberto;
+              return (
+                <Link key={t.id} to={`/tickets/${t.id}`}>
+                  <Card className="hover:shadow-md transition-all cursor-pointer mb-2 hover:border-primary/20">
+                    <CardContent className="p-4 flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{t.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t.type} · {new Date(t.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 items-center flex-shrink-0">
+                        <Badge className={sc.color}>{sc.label}</Badge>
+                        {t.priority && (
+                          <Badge className={priorityConfig[t.priority] ?? ''}>{t.priority}</Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </main>
     </div>
   );
