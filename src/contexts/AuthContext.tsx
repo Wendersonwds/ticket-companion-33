@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
+import { ensureUserAndClientExist } from '@/services/ensureProfile';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -44,15 +45,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIsRoleLoading(true);
-    supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
-        setRole(data?.role ?? 'client');
-        setIsRoleLoading(false);
-      });
+
+    // Ensure user + client records exist, then fetch role
+    ensureUserAndClientExist(user.id, user.email).then(() => {
+      supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          setRole(data?.role ?? 'client');
+          setIsRoleLoading(false);
+        });
+    });
   }, [user, loading]);
 
   return <AuthContext.Provider value={{ user, session, loading, role, isRoleLoading }}>{children}</AuthContext.Provider>;
