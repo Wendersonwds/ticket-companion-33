@@ -14,13 +14,14 @@ export async function getAdminTickets() {
 export async function getAdminClients() {
   const { data, error } = await supabase
     .from('clients')
-    .select('id, user_id, created_at, users:user_id(name, email:id), tickets(id)');
+    .select('id, user_id, created_at, users:user_id(name), tickets(id)');
   if (error) { console.log('Erro admin clients:', error.message); return []; }
   return (data ?? []).map((c: any) => ({
     id: c.id,
     user_id: c.user_id,
     created_at: c.created_at,
     name: c.users?.name ?? 'Sem nome',
+    email: c.users?.name ?? '',
     ticketCount: c.tickets?.length ?? 0,
   }));
 }
@@ -44,6 +45,12 @@ export async function getAdminMetrics() {
   const totalClientes = clients?.length ?? 0;
   const novosClientes = clients?.filter(c => new Date(c.created_at) >= sevenDaysAgo).length ?? 0;
 
+  // High priority open tickets
+  const highPriority = tickets?.filter(t => t.priority === 'alta' && t.status !== 'concluido').length ?? 0;
+
+  // Resolved in 24h (approximate - same day creation)
+  const resolvedIn24h = 0; // Would need updated_at tracking
+
   // Tickets per day (last 14 days)
   const ticketsPerDay: Record<string, number> = {};
   for (let i = 13; i >= 0; i--) {
@@ -63,24 +70,35 @@ export async function getAdminMetrics() {
   // By status
   const byStatus = { aberto: abertos, andamento, concluido: concluidos };
 
+  // By priority
+  const priorityCounts: Record<string, number> = { baixa: 0, media: 0, alta: 0 };
+  tickets?.forEach(t => { if (priorityCounts[t.priority] !== undefined) priorityCounts[t.priority]++; });
+  const PRIORITY_LABELS: Record<string, string> = { baixa: 'Baixa', media: 'Média', alta: 'Alta' };
+
   // Completion rate
   const taxaConclusao = total > 0 ? Math.round((concluidos / total) * 100) : 0;
 
   // Tickets per client
-  const ticketsByClient: Record<string, number> = {};
-  tickets?.forEach(t => { ticketsByClient[t.client_id] = (ticketsByClient[t.client_id] || 0) + 1; });
   const avgTicketsPerClient = totalClientes > 0 ? (total / totalClientes).toFixed(1) : '0';
+
+  // Recent tickets (last 5)
+  const recentTickets = (tickets ?? [])
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
 
   return {
     total, abertos, andamento, concluidos,
     totalClientes, novosClientes,
+    highPriority, resolvedIn24h,
     ticketsPerDay: Object.entries(ticketsPerDay).map(([date, count]) => ({
       date: new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
       chamados: count,
     })),
     byType: Object.entries(byType).map(([name, value]) => ({ name, value })),
     byStatus: Object.entries(byStatus).map(([name, value]) => ({ name, value })),
+    byPriority: Object.entries(priorityCounts).map(([name, value]) => ({ name: PRIORITY_LABELS[name] || name, value })),
     taxaConclusao,
     avgTicketsPerClient,
+    recentTickets,
   };
 }

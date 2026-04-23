@@ -23,8 +23,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AdminSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center border-b bg-card px-4">
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 flex items-center border-b bg-card px-4 flex-shrink-0">
             <SidebarTrigger className="mr-3" />
             <h1 className="text-lg font-semibold text-foreground">Painel Administrativo</h1>
           </header>
