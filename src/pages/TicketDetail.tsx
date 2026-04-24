@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getTicketById, updateTicketStatus } from '@/services/tickets';
+import { closeTicket, getTicketById, getTicketLogs, startTicketAttendance, updateTicketStatus } from '@/services/tickets';
 import { getMessages, sendMessage, subscribeToMessages } from '@/services/messages';
 import { uploadFile, getAttachments } from '@/services/upload';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,13 +13,15 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Clock, TrendingUp, CheckCircle2, AlertTriangle,
-  Paperclip, Send, Shield, User,
+  Paperclip, Send, Shield, User, Headphones, Lock, History,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700', icon: Clock },
-  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700', icon: TrendingUp },
-  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
+  aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning', icon: Clock },
+  andamento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary', icon: TrendingUp },
+  em_atendimento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary', icon: TrendingUp },
+  concluido: { label: 'Fechado', color: 'bg-success/10 text-success', icon: CheckCircle2 },
+  fechado: { label: 'Fechado', color: 'bg-success/10 text-success', icon: CheckCircle2 },
 };
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
@@ -40,8 +42,10 @@ const TicketDetail = () => {
   const [ticket, setTicket] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isAdmin = role === 'admin' || role === 'support';
 
@@ -52,6 +56,7 @@ const TicketDetail = () => {
     getTicketById(id).then(setTicket);
     getMessages(id).then(setMessages);
     getAttachments(id).then(setAttachments);
+    getTicketLogs(id).then(setLogs);
 
     const channel = subscribeToMessages(id, (msg) => {
       setMessages(prev => [...prev, msg]);
@@ -77,6 +82,8 @@ const TicketDetail = () => {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!id) return;
+    if (newStatus === 'em_atendimento') { await handleAttend(); return; }
+    if (newStatus === 'fechado') { await handleClose(); return; }
     try {
       await updateTicketStatus(id, newStatus);
       setTicket((prev: any) => ({ ...prev, status: newStatus }));
@@ -84,6 +91,32 @@ const TicketDetail = () => {
     } catch {
       toast({ title: 'Erro ao atualizar status', variant: 'destructive' });
     }
+  };
+
+  const handleAttend = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      const updated = await startTicketAttendance(id);
+      setTicket((prev: any) => ({ ...prev, ...updated }));
+      setLogs(await getTicketLogs(id));
+      toast({ title: 'Atendimento iniciado!' });
+    } catch {
+      toast({ title: 'Erro ao atender chamado', variant: 'destructive' });
+    } finally { setActionLoading(false); }
+  };
+
+  const handleClose = async () => {
+    if (!id || !window.confirm('Tem certeza que deseja fechar este chamado?')) return;
+    setActionLoading(true);
+    try {
+      const updated = await closeTicket(id);
+      setTicket((prev: any) => ({ ...prev, ...updated }));
+      setLogs(await getTicketLogs(id));
+      toast({ title: 'Chamado fechado!' });
+    } catch {
+      toast({ title: 'Erro ao fechar chamado', variant: 'destructive' });
+    } finally { setActionLoading(false); }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,6 +137,8 @@ const TicketDetail = () => {
   const sc = statusConfig[ticket.status] ?? statusConfig.aberto;
   const pc = priorityConfig[ticket.priority];
   const StatusIcon = sc.icon;
+  const isOwner = ticket.clients?.user_id === user?.id;
+  const canClose = ticket.status !== 'fechado' && (isAdmin || isOwner);
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
@@ -148,24 +183,35 @@ const TicketDetail = () => {
 
               {/* Admin/support: change status */}
               {isAdmin && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1.5 bg-primary/10 px-2 py-1 rounded-md">
                     <Shield className="h-3.5 w-3.5 text-primary" />
                     <span className="text-xs font-medium text-primary">{role === 'support' ? 'Suporte' : 'Admin'}</span>
                   </div>
-                  <Select value={ticket.status} onValueChange={handleStatusChange}>
+                  <Button className="gap-2" disabled={actionLoading || ticket.status === 'fechado' || (ticket.atendente_id && ticket.atendente_id !== user?.id)} onClick={handleAttend}>
+                    <Headphones className="h-4 w-4" />
+                    {ticket.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
+                  </Button>
+                  <Select value={ticket.status === 'andamento' ? 'em_atendimento' : ticket.status === 'concluido' ? 'fechado' : ticket.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-40 h-9">
                       <SelectValue placeholder="Alterar status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="aberto">Aberto</SelectItem>
-                      <SelectItem value="andamento">Em Andamento</SelectItem>
-                      <SelectItem value="concluido">Concluído</SelectItem>
+                      <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+                      <SelectItem value="fechado">Fechado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
             </div>
+            {canClose && (
+              <div className="mt-4 flex justify-end">
+                <Button variant="outline" className="gap-2" disabled={actionLoading} onClick={handleClose}>
+                  <Lock className="h-4 w-4" /> {isAdmin ? 'Fechar chamado' : 'Encerrar chamado'}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -274,9 +320,36 @@ const TicketDetail = () => {
                     <span className="font-medium text-foreground">{new Date(ticket.updated_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                 )}
+                {ticket.closed_at && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Fechado</span>
+                    <span className="font-medium text-foreground">{new Date(ticket.closed_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID</span>
                   <span className="font-mono text-xs text-foreground">{ticket.id?.slice(0, 8)}</span>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2"><History className="h-4 w-4" /> Histórico</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="relative pl-5 before:absolute before:left-1.5 before:top-2 before:bottom-0 before:w-px before:bg-border">
+                  <div className="relative mb-4">
+                    <span className="absolute -left-5 top-1 h-3 w-3 rounded-full bg-warning" />
+                    <p className="font-medium text-foreground">Chamado criado</p>
+                    <p className="text-xs text-muted-foreground">{new Date(ticket.created_at).toLocaleString('pt-BR')}</p>
+                  </div>
+                  {logs.map(log => (
+                    <div key={log.id} className="relative mb-4">
+                      <span className={`absolute -left-5 top-1 h-3 w-3 rounded-full ${log.action === 'fechado' ? 'bg-success' : 'bg-primary'}`} />
+                      <p className="font-medium text-foreground">{log.action === 'fechado' ? 'Fechado' : 'Atendido'} por {log.users?.name ?? 'usuário'}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString('pt-BR')}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

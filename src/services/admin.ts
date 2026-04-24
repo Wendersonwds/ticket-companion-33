@@ -40,13 +40,13 @@ export async function getAdminMetrics() {
 
   const total = tickets?.length ?? 0;
   const abertos = tickets?.filter(t => t.status === 'aberto').length ?? 0;
-  const andamento = tickets?.filter(t => t.status === 'andamento').length ?? 0;
-  const concluidos = tickets?.filter(t => t.status === 'concluido').length ?? 0;
+  const andamento = tickets?.filter(t => t.status === 'em_atendimento' || t.status === 'andamento').length ?? 0;
+  const concluidos = tickets?.filter(t => t.status === 'fechado' || t.status === 'concluido').length ?? 0;
   const totalClientes = clients?.length ?? 0;
   const novosClientes = clients?.filter(c => new Date(c.created_at) >= sevenDaysAgo).length ?? 0;
 
   // High priority open tickets
-  const highPriority = tickets?.filter(t => t.priority === 'alta' && t.status !== 'concluido').length ?? 0;
+  const highPriority = tickets?.filter(t => t.priority === 'alta' && t.status !== 'fechado' && t.status !== 'concluido').length ?? 0;
 
   // Resolved in 24h (approximate - same day creation)
   const resolvedIn24h = 0; // Would need updated_at tracking
@@ -68,7 +68,7 @@ export async function getAdminMetrics() {
   tickets?.forEach(t => { if (byType[t.type] !== undefined) byType[t.type]++; });
 
   // By status
-  const byStatus = { aberto: abertos, andamento, concluido: concluidos };
+  const byStatus = { aberto: abertos, em_atendimento: andamento, fechado: concluidos };
 
   // By priority
   const priorityCounts: Record<string, number> = { baixa: 0, media: 0, alta: 0 };

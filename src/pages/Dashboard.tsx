@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700', icon: Clock },
-  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700', icon: TrendingUp },
-  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
+  aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning', icon: Clock },
+  andamento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary', icon: TrendingUp },
+  em_atendimento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary', icon: TrendingUp },
+  concluido: { label: 'Fechado', color: 'bg-success/10 text-success', icon: CheckCircle2 },
+  fechado: { label: 'Fechado', color: 'bg-success/10 text-success', icon: CheckCircle2 },
 };
 
 const priorityConfig: Record<string, string> = {
@@ -48,7 +50,7 @@ const Dashboard = () => {
 
   if (loading || isRoleLoading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
 
-  const inProgress = tickets.filter(t => t.status === 'andamento').length;
+  const inProgress = tickets.filter(t => t.status === 'em_atendimento' || t.status === 'andamento').length;
   const recentTickets = tickets.slice(0, 5);
   const userName = user?.email?.split('@')[0] ?? 'Usuário';
 
@@ -106,7 +108,7 @@ const Dashboard = () => {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <span className="text-xs text-muted-foreground">Concluídos</span>
+                <span className="text-xs text-muted-foreground">Fechados</span>
               </div>
               <p className="text-2xl font-bold text-green-600">{stats.done}</p>
             </CardContent>

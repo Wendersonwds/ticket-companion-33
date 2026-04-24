@@ -18,7 +18,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  aberto: 'Abertos', andamento: 'Em Andamento', concluido: 'Concluídos',
+  aberto: 'Abertos', andamento: 'Em Atendimento', em_atendimento: 'Em Atendimento', concluido: 'Fechados', fechado: 'Fechados',
 };
 
 const AdminOverview = () => {
@@ -35,15 +35,15 @@ const AdminOverview = () => {
 
   const statCards = [
     { label: 'Total de Chamados', value: metrics.total, icon: Ticket, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'Abertos', value: metrics.abertos, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Em Andamento', value: metrics.andamento, icon: TrendingUp, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'Finalizados', value: metrics.concluidos, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Abertos', value: metrics.abertos, icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
+    { label: 'Em Atendimento', value: metrics.andamento, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Fechados', value: metrics.concluidos, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
     { label: 'Total Clientes', value: metrics.totalClientes, icon: Users, color: 'text-purple-500', bg: 'bg-purple-50' },
     { label: 'Novos (7 dias)', value: metrics.novosClientes, icon: UserPlus, color: 'text-cyan-500', bg: 'bg-cyan-50' },
   ];
 
   const kpiCards = [
-    { label: 'Taxa de Conclusão', value: `${metrics.taxaConclusao}%`, icon: Percent, desc: 'Chamados concluídos / total' },
+    { label: 'Taxa de Conclusão', value: `${metrics.taxaConclusao}%`, icon: Percent, desc: 'Chamados fechados / total' },
     { label: 'Chamados / Cliente', value: metrics.avgTicketsPerClient, icon: BarChart3, desc: 'Média por cliente ativo' },
     { label: 'Chamados Urgentes', value: metrics.highPriority ?? 0, icon: AlertTriangle, desc: 'Prioridade alta pendentes' },
     { label: 'Resolução Rápida', value: `${metrics.resolvedIn24h ?? 0}`, icon: Zap, desc: 'Resolvidos em < 24h' },
@@ -207,9 +207,9 @@ const AdminOverview = () => {
                   <p className="text-xs text-muted-foreground">{t.type} · {new Date(t.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
                 <Badge className={
-                  t.status === 'aberto' ? 'bg-blue-100 text-blue-700' :
-                  t.status === 'andamento' ? 'bg-amber-100 text-amber-700' :
-                  'bg-green-100 text-green-700'
+                  t.status === 'aberto' ? 'bg-warning/10 text-warning' :
+                  (t.status === 'andamento' || t.status === 'em_atendimento') ? 'bg-primary/10 text-primary' :
+                  'bg-success/10 text-success'
                 }>
                   {STATUS_LABELS[t.status] ?? t.status}
                 </Badge>

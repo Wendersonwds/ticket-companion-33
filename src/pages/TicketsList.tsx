@@ -11,9 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Ticket, Search, ArrowLeft, Plus } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700' },
-  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700' },
-  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700' },
+  aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning' },
+  andamento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary' },
+  em_atendimento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary' },
+  concluido: { label: 'Fechado', color: 'bg-success/10 text-success' },
+  fechado: { label: 'Fechado', color: 'bg-success/10 text-success' },
 };
 
 const priorityColors: Record<string, string> = {
@@ -39,7 +41,7 @@ const TicketsList = () => {
   }, [user, loading, navigate]);
 
   const filtered = tickets
-    .filter(t => filterStatus === 'todos' || t.status === filterStatus)
+    .filter(t => filterStatus === 'todos' || t.status === filterStatus || (filterStatus === 'em_atendimento' && t.status === 'andamento') || (filterStatus === 'fechado' && t.status === 'concluido'))
     .filter(t => !search || t.title?.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -73,8 +75,8 @@ const TicketsList = () => {
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="aberto">Abertos</SelectItem>
-              <SelectItem value="andamento">Em Andamento</SelectItem>
-              <SelectItem value="concluido">Concluídos</SelectItem>
+              <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+              <SelectItem value="fechado">Fechados</SelectItem>
             </SelectContent>
           </Select>
         </div>
