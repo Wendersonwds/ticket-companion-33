@@ -82,6 +82,8 @@ const TicketDetail = () => {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!id) return;
+    if (newStatus === 'em_atendimento') { await handleAttend(); return; }
+    if (newStatus === 'fechado') { await handleClose(); return; }
     try {
       await updateTicketStatus(id, newStatus);
       setTicket((prev: any) => ({ ...prev, status: newStatus }));
