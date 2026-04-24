@@ -42,6 +42,8 @@ const AdminTickets = () => {
   }, []);
 
   const handleStatusChange = async (ticketId: string, newStatus: string) => {
+    if (newStatus === 'em_atendimento') { await handleAttend(ticketId); return; }
+    if (newStatus === 'fechado') { await handleClose(ticketId); return; }
     try {
       await updateTicketStatus(ticketId, newStatus);
       setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
@@ -77,7 +79,7 @@ const AdminTickets = () => {
   const getClientName = (t: any) => t.clients?.users?.name ?? 'Desconhecido';
 
   let filtered = tickets
-    .filter(t => filterStatus === 'todos' || t.status === filterStatus)
+    .filter(t => filterStatus === 'todos' || t.status === filterStatus || (filterStatus === 'em_atendimento' && t.status === 'andamento') || (filterStatus === 'fechado' && t.status === 'concluido'))
     .filter(t => filterType === 'todos' || t.type === filterType)
     .filter(t => filterPriority === 'todos' || t.priority === filterPriority)
     .filter(t => {
