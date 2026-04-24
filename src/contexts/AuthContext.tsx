@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
-          setRole(data?.role ?? 'client');
+          setRole(data?.role ?? null);
           setIsRoleLoading(false);
         });
     });

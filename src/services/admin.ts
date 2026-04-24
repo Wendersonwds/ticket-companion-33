@@ -21,7 +21,7 @@ export async function getAdminClients() {
     user_id: c.user_id,
     created_at: c.created_at,
     name: c.users?.name ?? 'Sem nome',
-    email: c.users?.name ?? '',
+    email: '',
     ticketCount: c.tickets?.length ?? 0,
   }));
 }
