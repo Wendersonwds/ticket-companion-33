@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, ArrowUpDown, Headphones, Lock } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Headphones, Lock, UserCheck, CalendarDays } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -77,6 +77,7 @@ const AdminTickets = () => {
   };
 
   const getClientName = (t: any) => t.clients?.users?.name ?? 'Desconhecido';
+  const getAttendantName = (t: any) => t.atendente?.name ?? (t.atendente_id ? 'Atendente definido' : 'Sem atendente');
 
   let filtered = tickets
     .filter(t => filterStatus === 'todos' || t.status === filterStatus || (filterStatus === 'em_atendimento' && t.status === 'andamento') || (filterStatus === 'fechado' && t.status === 'concluido'))
@@ -163,17 +164,19 @@ const AdminTickets = () => {
                 <CardContent className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   <Link to={`/tickets/${t.id}`} className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{t.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      <span className="font-medium">{getClientName(t)}</span> · {t.type} · {new Date(t.created_at).toLocaleDateString('pt-BR')}
-                    </p>
+                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="font-medium">{getClientName(t)}</span>
+                      <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {new Date(t.created_at).toLocaleDateString('pt-BR')}</span>
+                      <span className="inline-flex items-center gap-1"><UserCheck className="h-3 w-3" /> {getAttendantName(t)}</span>
+                    </div>
                     {t.atendente_id === user?.id && <p className="text-xs font-medium text-primary mt-1">Em atendimento por você</p>}
                   </Link>
                   <div className="flex gap-2 items-center flex-shrink-0 flex-wrap">
                     <Badge className={sc.color}>{sc.label}</Badge>
                     {pc && <Badge className={pc.color}>{pc.label}</Badge>}
-                    <Button size="lg" className="gap-2" disabled={actionLoading === t.id || t.status === 'fechado' || (t.atendente_id && t.atendente_id !== user?.id)} onClick={() => handleAttend(t.id)}>
+                    <Button size="lg" className="gap-2 h-12 px-5 font-bold uppercase tracking-wide shadow-sm" disabled={actionLoading === t.id || t.status === 'fechado' || (t.atendente_id && t.atendente_id !== user?.id)} onClick={() => handleAttend(t.id)}>
                       <Headphones className="h-4 w-4" />
-                      {t.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
+                      {actionLoading === t.id ? 'Aguarde...' : t.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
                     </Button>
                     <Button variant="outline" className="gap-2" disabled={actionLoading === t.id || t.status === 'fechado'} onClick={() => handleClose(t.id)}>
                       <Lock className="h-4 w-4" /> Fechar chamado
