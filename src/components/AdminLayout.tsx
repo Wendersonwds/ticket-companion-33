@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!loading && !isRoleLoading) {
       if (!user) navigate('/auth');
-      else if (role !== 'admin') navigate('/dashboard');
+      else if (role !== 'admin' && role !== 'support') navigate('/dashboard');
     }
   }, [user, loading, role, isRoleLoading, navigate]);
 
