@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Clock, TrendingUp, CheckCircle2, AlertTriangle,
-  Paperclip, Send, Shield, User, Headphones, Lock, History,
+  Paperclip, Send, Shield, User, Headphones, Lock, History, CircleDot,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -138,7 +138,8 @@ const TicketDetail = () => {
   const pc = priorityConfig[ticket.priority];
   const StatusIcon = sc.icon;
   const isOwner = ticket.clients?.user_id === user?.id;
-  const canClose = ticket.status !== 'fechado' && (isAdmin || isOwner);
+  const canClose = ticket.status !== 'fechado' && ticket.status !== 'concluido' && (isAdmin || isOwner);
+  const isAttendingMe = ticket.atendente_id === user?.id;
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
@@ -188,9 +189,9 @@ const TicketDetail = () => {
                     <Shield className="h-3.5 w-3.5 text-primary" />
                     <span className="text-xs font-medium text-primary">{role === 'support' ? 'Suporte' : 'Admin'}</span>
                   </div>
-                  <Button className="gap-2" disabled={actionLoading || ticket.status === 'fechado' || (ticket.atendente_id && ticket.atendente_id !== user?.id)} onClick={handleAttend}>
+                  <Button className="gap-2 h-12 px-5 font-bold uppercase tracking-wide shadow-sm" disabled={actionLoading || ticket.status === 'fechado' || isAttendingMe || (ticket.atendente_id && ticket.atendente_id !== user?.id)} onClick={handleAttend}>
                     <Headphones className="h-4 w-4" />
-                    {ticket.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
+                    {actionLoading ? 'Aguarde...' : isAttendingMe ? 'Em atendimento por você' : 'Atender chamado'}
                   </Button>
                   <Select value={ticket.status === 'andamento' ? 'em_atendimento' : ticket.status === 'concluido' ? 'fechado' : ticket.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-40 h-9">
@@ -236,7 +237,7 @@ const TicketDetail = () => {
             </CardHeader>
             <CardContent>
               <div className="max-h-96 overflow-y-auto space-y-3 mb-4 p-2 bg-muted/30 rounded-lg">
-                {messages.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Nenhuma mensagem ainda.</p>}
+                {messages.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Envie a primeira mensagem deste chamado.</p>}
                 {messages.map((m, i) => {
                   const isMe = m.sender_id === user?.id;
                   return (
@@ -339,13 +340,15 @@ const TicketDetail = () => {
               <CardContent className="space-y-3 text-sm">
                 <div className="relative pl-5 before:absolute before:left-1.5 before:top-2 before:bottom-0 before:w-px before:bg-border">
                   <div className="relative mb-4">
-                    <span className="absolute -left-5 top-1 h-3 w-3 rounded-full bg-warning" />
+                    <span className="absolute -left-6 top-0.5 h-5 w-5 rounded-full bg-warning/10 text-warning flex items-center justify-center"><CircleDot className="h-3 w-3" /></span>
                     <p className="font-medium text-foreground">Chamado criado</p>
                     <p className="text-xs text-muted-foreground">{new Date(ticket.created_at).toLocaleString('pt-BR')}</p>
                   </div>
                   {logs.map(log => (
                     <div key={log.id} className="relative mb-4">
-                      <span className={`absolute -left-5 top-1 h-3 w-3 rounded-full ${log.action === 'fechado' ? 'bg-success' : 'bg-primary'}`} />
+                      <span className={`absolute -left-6 top-0.5 h-5 w-5 rounded-full flex items-center justify-center ${log.action === 'fechado' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'}`}>
+                        {log.action === 'fechado' ? <CheckCircle2 className="h-3 w-3" /> : <Headphones className="h-3 w-3" />}
+                      </span>
                       <p className="font-medium text-foreground">{log.action === 'fechado' ? 'Fechado' : 'Atendido'} por {log.users?.name ?? 'usuário'}</p>
                       <p className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString('pt-BR')}</p>
                     </div>
