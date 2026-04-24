@@ -27,8 +27,39 @@ const AdminOverview = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAdminMetrics().then(m => { setMetrics(m); setLoading(false); });
-  }, []);
+    loadMetrics();
+  }, [])
+
+async function loadMetrics() {
+  try {
+    setLoading(true);
+
+    const { count: clientes } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'client');
+
+    const { count: abertos } = await supabase
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'abe rto');
+
+    const { count: atendimento } = await supabase
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'em_atendimento');
+
+    const { count: fechados } = await supabase
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'fechado');
+
+    setMetrics({
+      clientes: clientes || 0,
+      abertos: abertos || 0,
+      atendimento: atendimento || 0,
+      fechados: fechados || 0,
+    });
 
   if (loading || !metrics) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando métricas...</div>;
