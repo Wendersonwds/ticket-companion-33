@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Ticket, Clock, CheckCircle2, Plus, LogOut, ArrowRight,
-  AlertCircle, TrendingUp,
+  AlertCircle, TrendingUp, BarChart3,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -53,6 +53,8 @@ const Dashboard = () => {
   const inProgress = tickets.filter(t => t.status === 'em_atendimento' || t.status === 'andamento').length;
   const recentTickets = tickets.slice(0, 5);
   const userName = user?.email?.split('@')[0] ?? 'Usuário';
+  const closed = stats.done;
+  const maxStatus = Math.max(stats.open, inProgress, closed, 1);
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,6 +127,26 @@ const Dashboard = () => {
               <Link to="/tickets/new">
                 <Button className="mt-2">Criar Primeiro Chamado</Button>
               </Link>
+            </CardContent>
+          </Card>
+        )}
+
+        {stats.total > 0 && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" /> Status dos chamados</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { label: 'Abertos', value: stats.open, bar: 'bg-warning' },
+                { label: 'Em atendimento', value: inProgress, bar: 'bg-primary' },
+                { label: 'Fechados', value: closed, bar: 'bg-success' },
+              ].map(item => (
+                <div key={item.label} className="space-y-1">
+                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">{item.label}</span><span className="font-medium text-foreground">{item.value}</span></div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden"><div className={`h-full ${item.bar}`} style={{ width: `${(item.value / maxStatus) * 100}%` }} /></div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}
