@@ -41,7 +41,7 @@ const TicketsList = () => {
   }, [user, loading, navigate]);
 
   const filtered = tickets
-    .filter(t => filterStatus === 'todos' || t.status === filterStatus)
+    .filter(t => filterStatus === 'todos' || t.status === filterStatus || (filterStatus === 'em_atendimento' && t.status === 'andamento') || (filterStatus === 'fechado' && t.status === 'concluido'))
     .filter(t => !search || t.title?.toLowerCase().includes(search.toLowerCase()));
 
   return (
