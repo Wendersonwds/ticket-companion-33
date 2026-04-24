@@ -181,24 +181,35 @@ const TicketDetail = () => {
 
               {/* Admin/support: change status */}
               {isAdmin && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1.5 bg-primary/10 px-2 py-1 rounded-md">
                     <Shield className="h-3.5 w-3.5 text-primary" />
                     <span className="text-xs font-medium text-primary">{role === 'support' ? 'Suporte' : 'Admin'}</span>
                   </div>
-                  <Select value={ticket.status} onValueChange={handleStatusChange}>
+                  <Button className="gap-2" disabled={actionLoading || ticket.status === 'fechado' || (ticket.atendente_id && ticket.atendente_id !== user?.id)} onClick={handleAttend}>
+                    <Headphones className="h-4 w-4" />
+                    {ticket.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
+                  </Button>
+                  <Select value={ticket.status === 'andamento' ? 'em_atendimento' : ticket.status === 'concluido' ? 'fechado' : ticket.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-40 h-9">
                       <SelectValue placeholder="Alterar status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="aberto">Aberto</SelectItem>
-                      <SelectItem value="andamento">Em Andamento</SelectItem>
-                      <SelectItem value="concluido">Concluído</SelectItem>
+                      <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+                      <SelectItem value="fechado">Fechado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
             </div>
+            {canClose && (
+              <div className="mt-4 flex justify-end">
+                <Button variant="outline" className="gap-2" disabled={actionLoading} onClick={handleClose}>
+                  <Lock className="h-4 w-4" /> {isAdmin ? 'Fechar chamado' : 'Encerrar chamado'}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -307,9 +318,36 @@ const TicketDetail = () => {
                     <span className="font-medium text-foreground">{new Date(ticket.updated_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                 )}
+                {ticket.closed_at && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Fechado</span>
+                    <span className="font-medium text-foreground">{new Date(ticket.closed_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID</span>
                   <span className="font-mono text-xs text-foreground">{ticket.id?.slice(0, 8)}</span>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2"><History className="h-4 w-4" /> Histórico</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="relative pl-5 before:absolute before:left-1.5 before:top-2 before:bottom-0 before:w-px before:bg-border">
+                  <div className="relative mb-4">
+                    <span className="absolute -left-5 top-1 h-3 w-3 rounded-full bg-warning" />
+                    <p className="font-medium text-foreground">Chamado criado</p>
+                    <p className="text-xs text-muted-foreground">{new Date(ticket.created_at).toLocaleString('pt-BR')}</p>
+                  </div>
+                  {logs.map(log => (
+                    <div key={log.id} className="relative mb-4">
+                      <span className={`absolute -left-5 top-1 h-3 w-3 rounded-full ${log.action === 'fechado' ? 'bg-success' : 'bg-primary'}`} />
+                      <p className="font-medium text-foreground">{log.action === 'fechado' ? 'Fechado' : 'Atendido'} por {log.users?.name ?? 'usuário'}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString('pt-BR')}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
