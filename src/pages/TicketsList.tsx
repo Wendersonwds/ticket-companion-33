@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Ticket, Search, ArrowLeft, Plus } from 'lucide-react';
+import { Ticket, Search, ArrowLeft, Plus, Clock, TrendingUp, CheckCircle2 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning' },
@@ -30,6 +30,9 @@ const TicketsList = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
+  const open = tickets.filter(t => t.status === 'aberto').length;
+  const progress = tickets.filter(t => t.status === 'em_atendimento' || t.status === 'andamento').length;
+  const closed = tickets.filter(t => t.status === 'fechado' || t.status === 'concluido').length;
 
   useEffect(() => {
     if (!loading && !user) { navigate('/auth'); return; }
@@ -64,6 +67,24 @@ const TicketsList = () => {
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-4">
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Abertos', value: open, icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
+            { label: 'Em atendimento', value: progress, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Fechados', value: closed, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+          ].map(item => (
+            <Card key={item.label}>
+              <CardContent className="p-3 sm:p-4">
+                <div className={`h-8 w-8 rounded-md ${item.bg} flex items-center justify-center mb-2`}>
+                  <item.icon className={`h-4 w-4 ${item.color}`} />
+                </div>
+                <p className="text-xl font-bold text-foreground">{item.value}</p>
+                <p className="text-xs text-muted-foreground truncate">{item.label}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
