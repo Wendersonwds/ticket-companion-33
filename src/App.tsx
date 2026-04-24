@@ -12,6 +12,7 @@ import TicketDetail from "./pages/TicketDetail";
 import LeadsPage from "./pages/LeadsPage";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./components/AdminLayout";
+import RequireRole from "./components/RequireRole";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminTickets from "./pages/admin/AdminTickets";
 import AdminClients from "./pages/admin/AdminClients";
@@ -33,9 +34,9 @@ const App = () => (
             <Route path="/tickets/new" element={<NewTicket />} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
             {/* Admin routes */}
-            <Route path="/admin" element={<AdminLayout><AdminOverview /></AdminLayout>} />
-            <Route path="/admin/tickets" element={<AdminLayout><AdminTickets /></AdminLayout>} />
-            <Route path="/admin/clients" element={<AdminLayout><AdminClients /></AdminLayout>} />
+            <Route path="/admin" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminOverview /></AdminLayout></RequireRole>} />
+            <Route path="/admin/tickets" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminTickets /></AdminLayout></RequireRole>} />
+            <Route path="/admin/clients" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminClients /></AdminLayout></RequireRole>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
