@@ -35,7 +35,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!loading && !user) { navigate('/auth'); return; }
-    if (!loading && !isRoleLoading && role === 'admin') { navigate('/admin'); return; }
+    if (!loading && !isRoleLoading && (role === 'admin' || role === 'support')) { navigate('/admin'); return; }
     if (!user) return;
     (async () => {
       const clientId = await getClientId(user.id);
@@ -91,28 +91,28 @@ const Dashboard = () => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-blue-500" />
+                <Clock className="h-4 w-4 text-warning" />
                 <span className="text-xs text-muted-foreground">Abertos</span>
               </div>
-              <p className="text-2xl font-bold text-blue-600">{stats.open}</p>
+              <p className="text-2xl font-bold text-warning">{stats.open}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-amber-500" />
+                <TrendingUp className="h-4 w-4 text-primary" />
                 <span className="text-xs text-muted-foreground">Em Andamento</span>
               </div>
-              <p className="text-2xl font-bold text-amber-600">{inProgress}</p>
+              <p className="text-2xl font-bold text-primary">{inProgress}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
                 <span className="text-xs text-muted-foreground">Fechados</span>
               </div>
-              <p className="text-2xl font-bold text-green-600">{stats.done}</p>
+              <p className="text-2xl font-bold text-success">{stats.done}</p>
             </CardContent>
           </Card>
         </div>
