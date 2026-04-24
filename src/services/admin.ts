@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 export async function getAdminTickets() {
   const { data, error } = await supabase
     .from('tickets')
-    .select('*, clients(id, user_id, users:user_id(name))')
+    .select('*, clients(id, user_id, users:user_id(name)), atendente:atendente_id(name, role)')
     .order('created_at', { ascending: false });
   if (error) { console.log('Erro admin tickets:', error.message); return []; }
   return data ?? [];
@@ -30,7 +30,7 @@ export async function getAdminClients() {
 export async function getAdminMetrics() {
   const { data: tickets, error } = await supabase
     .from('tickets')
-    .select('id, status, type, priority, created_at, client_id');
+    .select('id, title, status, type, priority, created_at, client_id, clients(id, user_id, users:user_id(name)), atendente:atendente_id(name, role)');
   if (error) { console.log('Erro métricas:', error.message); return null; }
 
   const { data: clients } = await supabase.from('clients').select('id, created_at');
