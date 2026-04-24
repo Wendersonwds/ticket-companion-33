@@ -43,7 +43,7 @@ const TicketDetail = () => {
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isAdmin = role === 'admin';
+  const isAdmin = role === 'admin' || role === 'support';
 
   useEffect(() => {
     if (!loading && !user) { navigate('/auth'); return; }
@@ -146,12 +146,12 @@ const TicketDetail = () => {
                 </div>
               </div>
 
-              {/* Admin: change status */}
+              {/* Admin/support: change status */}
               {isAdmin && (
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 bg-primary/10 px-2 py-1 rounded-md">
                     <Shield className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-xs font-medium text-primary">Admin</span>
+                    <span className="text-xs font-medium text-primary">{role === 'support' ? 'Suporte' : 'Admin'}</span>
                   </div>
                   <Select value={ticket.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-40 h-9">
