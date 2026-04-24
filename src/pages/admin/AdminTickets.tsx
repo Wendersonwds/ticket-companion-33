@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminTickets } from '@/services/admin';
-import { updateTicketStatus } from '@/services/tickets';
+import { closeTicket, startTicketAttendance, updateTicketStatus } from '@/services/tickets';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Headphones, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700' },
-  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700' },
-  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700' },
+  aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning' },
+  andamento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary' },
+  em_atendimento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary' },
+  concluido: { label: 'Fechado', color: 'bg-success/10 text-success' },
+  fechado: { label: 'Fechado', color: 'bg-success/10 text-success' },
 };
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
@@ -30,7 +33,9 @@ const AdminTickets = () => {
   const [filterType, setFilterType] = useState('todos');
   const [filterPriority, setFilterPriority] = useState('todos');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     getAdminTickets().then(t => { setTickets(t); setLoading(false); });
@@ -44,6 +49,29 @@ const AdminTickets = () => {
     } catch {
       toast({ title: 'Erro ao atualizar', variant: 'destructive' });
     }
+  };
+
+  const handleAttend = async (ticketId: string) => {
+    setActionLoading(ticketId);
+    try {
+      const updated = await startTicketAttendance(ticketId);
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, ...updated } : t));
+      toast({ title: 'Atendimento iniciado!' });
+    } catch {
+      toast({ title: 'Erro ao atender chamado', variant: 'destructive' });
+    } finally { setActionLoading(null); }
+  };
+
+  const handleClose = async (ticketId: string) => {
+    if (!window.confirm('Tem certeza que deseja fechar este chamado?')) return;
+    setActionLoading(ticketId);
+    try {
+      const updated = await closeTicket(ticketId);
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, ...updated } : t));
+      toast({ title: 'Chamado fechado!' });
+    } catch {
+      toast({ title: 'Erro ao fechar chamado', variant: 'destructive' });
+    } finally { setActionLoading(null); }
   };
 
   const getClientName = (t: any) => t.clients?.users?.name ?? 'Desconhecido';
@@ -130,22 +158,30 @@ const AdminTickets = () => {
             const pc = priorityConfig[t.priority];
             return (
               <Card key={t.id} className="hover:shadow-md transition-all hover:border-primary/20">
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <CardContent className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   <Link to={`/tickets/${t.id}`} className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{t.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       <span className="font-medium">{getClientName(t)}</span> · {t.type} · {new Date(t.created_at).toLocaleDateString('pt-BR')}
                     </p>
+                    {t.atendente_id === user?.id && <p className="text-xs font-medium text-primary mt-1">Em atendimento por você</p>}
                   </Link>
                   <div className="flex gap-2 items-center flex-shrink-0 flex-wrap">
                     <Badge className={sc.color}>{sc.label}</Badge>
                     {pc && <Badge className={pc.color}>{pc.label}</Badge>}
-                    <Select value={t.status} onValueChange={(val) => handleStatusChange(t.id, val)}>
+                    <Button size="lg" className="gap-2" disabled={actionLoading === t.id || t.status === 'fechado' || (t.atendente_id && t.atendente_id !== user?.id)} onClick={() => handleAttend(t.id)}>
+                      <Headphones className="h-4 w-4" />
+                      {t.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
+                    </Button>
+                    <Button variant="outline" className="gap-2" disabled={actionLoading === t.id || t.status === 'fechado'} onClick={() => handleClose(t.id)}>
+                      <Lock className="h-4 w-4" /> Fechar chamado
+                    </Button>
+                    <Select value={t.status === 'andamento' ? 'em_atendimento' : t.status === 'concluido' ? 'fechado' : t.status} onValueChange={(val) => handleStatusChange(t.id, val)}>
                       <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="aberto">Aberto</SelectItem>
-                        <SelectItem value="andamento">Em Andamento</SelectItem>
-                        <SelectItem value="concluido">Concluído</SelectItem>
+                        <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
+                        <SelectItem value="fechado">Fechado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
