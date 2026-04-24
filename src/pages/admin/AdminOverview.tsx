@@ -60,6 +60,14 @@ async function loadMetrics() {
       atendimento: atendimento || 0,
       fechados: fechados || 0,
     });
+    
+      } catch (err) {
+    console.log('erro métricas:', err);
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   if (loading || !metrics) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando métricas...</div>;
