@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getTicketById, updateTicketStatus } from '@/services/tickets';
+import { closeTicket, getTicketById, getTicketLogs, startTicketAttendance, updateTicketStatus } from '@/services/tickets';
 import { getMessages, sendMessage, subscribeToMessages } from '@/services/messages';
 import { uploadFile, getAttachments } from '@/services/upload';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,13 +13,15 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Clock, TrendingUp, CheckCircle2, AlertTriangle,
-  Paperclip, Send, Shield, User,
+  Paperclip, Send, Shield, User, Headphones, Lock, History,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  aberto: { label: 'Aberto', color: 'bg-blue-100 text-blue-700', icon: Clock },
-  andamento: { label: 'Em Andamento', color: 'bg-amber-100 text-amber-700', icon: TrendingUp },
-  concluido: { label: 'Concluído', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
+  aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning', icon: Clock },
+  andamento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary', icon: TrendingUp },
+  em_atendimento: { label: 'Em Atendimento', color: 'bg-primary/10 text-primary', icon: TrendingUp },
+  concluido: { label: 'Fechado', color: 'bg-success/10 text-success', icon: CheckCircle2 },
+  fechado: { label: 'Fechado', color: 'bg-success/10 text-success', icon: CheckCircle2 },
 };
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
@@ -40,8 +42,10 @@ const TicketDetail = () => {
   const [ticket, setTicket] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isAdmin = role === 'admin' || role === 'support';
 
@@ -52,6 +56,7 @@ const TicketDetail = () => {
     getTicketById(id).then(setTicket);
     getMessages(id).then(setMessages);
     getAttachments(id).then(setAttachments);
+    getTicketLogs(id).then(setLogs);
 
     const channel = subscribeToMessages(id, (msg) => {
       setMessages(prev => [...prev, msg]);
@@ -86,6 +91,32 @@ const TicketDetail = () => {
     }
   };
 
+  const handleAttend = async () => {
+    if (!id) return;
+    setActionLoading(true);
+    try {
+      const updated = await startTicketAttendance(id);
+      setTicket((prev: any) => ({ ...prev, ...updated }));
+      setLogs(await getTicketLogs(id));
+      toast({ title: 'Atendimento iniciado!' });
+    } catch {
+      toast({ title: 'Erro ao atender chamado', variant: 'destructive' });
+    } finally { setActionLoading(false); }
+  };
+
+  const handleClose = async () => {
+    if (!id || !window.confirm('Tem certeza que deseja fechar este chamado?')) return;
+    setActionLoading(true);
+    try {
+      const updated = await closeTicket(id);
+      setTicket((prev: any) => ({ ...prev, ...updated }));
+      setLogs(await getTicketLogs(id));
+      toast({ title: 'Chamado fechado!' });
+    } catch {
+      toast({ title: 'Erro ao fechar chamado', variant: 'destructive' });
+    } finally { setActionLoading(false); }
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !id) return;
@@ -104,6 +135,8 @@ const TicketDetail = () => {
   const sc = statusConfig[ticket.status] ?? statusConfig.aberto;
   const pc = priorityConfig[ticket.priority];
   const StatusIcon = sc.icon;
+  const isOwner = ticket.clients?.user_id === user?.id;
+  const canClose = ticket.status !== 'fechado' && (isAdmin || isOwner);
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
