@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Bug, Lightbulb, FolderKanban, Send } from 'lucide-react';
 
 const NewTicket = () => {
   const { user, loading } = useAuth();
@@ -43,9 +44,9 @@ const NewTicket = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-lg mx-auto">
-        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">← Voltar</Button>
+        <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4 gap-2"><ArrowLeft className="h-4 w-4" /> Voltar</Button>
         <Card>
-          <CardHeader><CardTitle>Novo Chamado</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><Send className="h-5 w-5 text-primary" /> Novo Chamado</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -53,9 +54,9 @@ const NewTicket = () => {
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bug">Bug</SelectItem>
-                    <SelectItem value="melhoria">Melhoria</SelectItem>
-                    <SelectItem value="novo_projeto">Novo Projeto</SelectItem>
+                    <SelectItem value="bug"><span className="inline-flex items-center gap-2"><Bug className="h-4 w-4" /> Bug</span></SelectItem>
+                    <SelectItem value="melhoria"><span className="inline-flex items-center gap-2"><Lightbulb className="h-4 w-4" /> Melhoria</span></SelectItem>
+                    <SelectItem value="novo_projeto"><span className="inline-flex items-center gap-2"><FolderKanban className="h-4 w-4" /> Projeto</span></SelectItem>
                     <SelectItem value="duvida">Dúvida</SelectItem>
                   </SelectContent>
                 </Select>
@@ -68,7 +69,8 @@ const NewTicket = () => {
                 <label className="text-sm font-medium text-foreground mb-1 block">Descrição</label>
                 <Textarea placeholder="Detalhes (opcional)" value={description} onChange={e => setDescription(e.target.value)} rows={3} />
               </div>
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button type="submit" className="w-full gap-2" disabled={submitting}>
+                <Send className="h-4 w-4" />
                 {submitting ? 'Criando...' : 'Criar Chamado'}
               </Button>
             </form>

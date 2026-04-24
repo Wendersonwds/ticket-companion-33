@@ -8,8 +8,9 @@ import {
 } from 'recharts';
 import {
   Ticket, Clock, CheckCircle2, Users, UserPlus, TrendingUp, Percent, BarChart3,
-  AlertTriangle, Zap,
+  AlertTriangle, Zap, ArrowRight, Headphones,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const COLORS = ['hsl(217, 91%, 60%)', 'hsl(38, 92%, 50%)', 'hsl(142, 76%, 36%)', 'hsl(0, 84%, 60%)'];
 
@@ -38,8 +39,8 @@ const AdminOverview = () => {
     { label: 'Abertos', value: metrics.abertos, icon: Clock, color: 'text-warning', bg: 'bg-warning/10' },
     { label: 'Em Atendimento', value: metrics.andamento, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
     { label: 'Fechados', value: metrics.concluidos, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-    { label: 'Total Clientes', value: metrics.totalClientes, icon: Users, color: 'text-purple-500', bg: 'bg-purple-50' },
-    { label: 'Novos (7 dias)', value: metrics.novosClientes, icon: UserPlus, color: 'text-cyan-500', bg: 'bg-cyan-50' },
+    { label: 'Total Clientes', value: metrics.totalClientes, icon: Users, color: 'text-accent-foreground', bg: 'bg-accent' },
+    { label: 'Novos (7 dias)', value: metrics.novosClientes, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/10' },
   ];
 
   const kpiCards = [
@@ -196,16 +197,26 @@ const AdminOverview = () => {
       {/* Recent activity */}
       {metrics.recentTickets && metrics.recentTickets.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-semibold">Últimos Chamados</CardTitle>
+            <Link to="/admin/tickets" className="text-xs font-medium text-primary inline-flex items-center gap-1">
+              Ver fila <ArrowRight className="h-3 w-3" />
+            </Link>
           </CardHeader>
           <CardContent className="space-y-2">
             {metrics.recentTickets.map((t: any) => (
-              <div key={t.id} className="flex items-center justify-between py-2 border-b last:border-0">
+              <Link key={t.id} to={`/tickets/${t.id}`} className="flex items-center justify-between gap-3 py-3 border-b last:border-0 hover:bg-muted/40 rounded-md px-2 transition-colors">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{t.title}</p>
-                  <p className="text-xs text-muted-foreground">{t.type} · {new Date(t.created_at).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t.clients?.users?.name ?? 'Cliente'} · {t.type} · {new Date(t.created_at).toLocaleDateString('pt-BR')}
+                  </p>
                 </div>
+                {t.atendente?.name && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <Headphones className="h-3 w-3" /> {t.atendente.name}
+                  </span>
+                )}
                 <Badge className={
                   t.status === 'aberto' ? 'bg-warning/10 text-warning' :
                   (t.status === 'andamento' || t.status === 'em_atendimento') ? 'bg-primary/10 text-primary' :
@@ -213,7 +224,7 @@ const AdminOverview = () => {
                 }>
                   {STATUS_LABELS[t.status] ?? t.status}
                 </Badge>
-              </div>
+              </Link>
             ))}
           </CardContent>
         </Card>
