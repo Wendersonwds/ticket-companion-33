@@ -50,11 +50,7 @@ const LeadsPage = () => {
       </header>
       <div className="flex items-center justify-center p-6">
         <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle>Fale Conosco</CardTitle>
-            <CardDescription>Preencha o formulário abaixo e entraremos em contato</CardDescription>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input placeholder="Nome" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
               <Input type="email" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />

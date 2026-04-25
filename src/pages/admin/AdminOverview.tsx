@@ -28,45 +28,19 @@ const AdminOverview = () => {
 
   useEffect(() => {
     loadMetrics();
-  }, [])
+  }, []);
 
-async function loadMetrics() {
-  try {
-    setLoading(true);
-
-    const { count: clientes } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'client');
-
-    const { count: abertos } = await supabase
-      .from('tickets')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'abe rto');
-
-    const { count: atendimento } = await supabase
-      .from('tickets')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'em_atendimento');
-
-    const { count: fechados } = await supabase
-      .from('tickets')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'fechado');
-
-    setMetrics({
-      clientes: clientes || 0,
-      abertos: abertos || 0,
-      atendimento: atendimento || 0,
-      fechados: fechados || 0,
-    });
-    
-      } catch (err) {
-    console.log('erro métricas:', err);
-  } finally {
-    setLoading(false);
+  async function loadMetrics() {
+    try {
+      setLoading(true);
+      const data = await getAdminMetrics();
+      setMetrics(data);
+    } catch (err) {
+      console.log('erro métricas:', err);
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
 
   if (loading || !metrics) {
