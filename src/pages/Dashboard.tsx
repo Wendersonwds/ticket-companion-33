@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Ticket, Clock, CheckCircle2, Plus, LogOut, ArrowRight,
-  AlertCircle, TrendingUp, BarChart3,
+  AlertCircle, TrendingUp, BarChart3, User,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   aberto: { label: 'Aberto', color: 'bg-warning/10 text-warning', icon: Clock },
@@ -70,7 +71,13 @@ const Dashboard = () => {
               <Plus className="h-4 w-4" /> Novo Chamado
             </Button>
           </Link>
-          <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/auth'); }}>
+          <ThemeToggle />
+          <Link to="/profile">
+            <Button variant="ghost" size="icon" aria-label="Meu perfil">
+              <User className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate('/auth'); }} aria-label="Sair">
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
