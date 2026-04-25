@@ -23,27 +23,30 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LeadsPage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/tickets" element={<TicketsList />} />
-            <Route path="/tickets/new" element={<NewTicket />} />
-            <Route path="/tickets/:id" element={<TicketDetail />} />
-            {/* Admin routes */}
-            <Route path="/admin" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminOverview /></AdminLayout></RequireRole>} />
-            <Route path="/admin/tickets" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminTickets /></AdminLayout></RequireRole>} />
-            <Route path="/admin/clients" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminClients /></AdminLayout></RequireRole>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LeadsPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/tickets" element={<TicketsList />} />
+              <Route path="/tickets/new" element={<NewTicket />} />
+              <Route path="/tickets/:id" element={<TicketDetail />} />
+              {/* Admin routes */}
+              <Route path="/admin" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminOverview /></AdminLayout></RequireRole>} />
+              <Route path="/admin/tickets" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminTickets /></AdminLayout></RequireRole>} />
+              <Route path="/admin/clients" element={<RequireRole roles={['admin', 'support']}><AdminLayout><AdminClients /></AdminLayout></RequireRole>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
