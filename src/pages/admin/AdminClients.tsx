@@ -23,13 +23,55 @@ const AdminClients = () => {
 
   if (loading) return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando...</div>;
 
+  const total = clients.length;
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const novos = clients.filter(c => c.created_at && new Date(c.created_at).getTime() >= sevenDaysAgo).length;
+  const comTickets = clients.filter(c => (c.ticketCount ?? 0) > 0).length;
+
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-4">
       <div>
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Users className="h-6 w-6" /> Clientes
         </h2>
-        <p className="text-sm text-muted-foreground">{filtered.length} cliente(s) cadastrado(s)</p>
+        <p className="text-sm text-muted-foreground">{filtered.length} de {total} cliente(s) exibido(s)</p>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="border-primary/20">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Total cadastrados</p>
+              <p className="text-3xl font-bold text-foreground">{total}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+              <UserPlus className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Novos (7 dias)</p>
+              <p className="text-3xl font-bold text-foreground">{novos}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+              <TicketCheck className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Com chamados</p>
+              <p className="text-3xl font-bold text-foreground">{comTickets}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search */}
