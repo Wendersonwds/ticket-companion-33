@@ -43,8 +43,19 @@ const AdminOverview = () => {
   }
 
 
-  if (loading || !metrics) {
+  if (loading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando métricas...</div>;
+  }
+
+  if (!metrics) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 text-center text-muted-foreground">
+        <p>Não foi possível carregar as métricas agora.</p>
+        <button type="button" onClick={loadMetrics} className="text-sm font-medium text-primary hover:underline">
+          Tentar novamente
+        </button>
+      </div>
+    );
   }
 
   const statCards = [
