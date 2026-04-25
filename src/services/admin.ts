@@ -31,20 +31,52 @@ export async function getAdminTickets() {
   return attachAttendants(data ?? []);
 }
 
-// Get all clients with user info and ticket counts
+// Get all clients (users with role 'client') with their client profile + ticket counts
 export async function getAdminClients() {
-  const { data, error } = await supabase
+  // 1. Buscar todos os usuários com role 'client'
+  const { data: users, error: usersError } = await supabase
+    .from('users')
+    .select('id, name, email, created_at, role')
+    .eq('role', 'client');
+
+  if (usersError) { console.log('Erro admin users:', usersError.message); return []; }
+
+  const userIds = (users ?? []).map(u => u.id);
+  if (userIds.length === 0) return [];
+
+  // 2. Buscar perfis de cliente correspondentes
+  const { data: clientProfiles } = await supabase
     .from('clients')
-    .select('id, user_id, created_at, users:user_id(name), tickets(id)');
-  if (error) { console.log('Erro admin clients:', error.message); return []; }
-  return (data ?? []).map((c: any) => ({
-    id: c.id,
-    user_id: c.user_id,
-    created_at: c.created_at,
-    name: c.users?.name ?? 'Sem nome',
-    email: '',
-    ticketCount: c.tickets?.length ?? 0,
-  }));
+    .select('id, user_id, created_at')
+    .in('user_id', userIds);
+
+  const profileByUser = new Map((clientProfiles ?? []).map((c: any) => [c.user_id, c]));
+
+  // 3. Contar tickets por client_id
+  const clientIds = (clientProfiles ?? []).map((c: any) => c.id);
+  const ticketsByClient = new Map<string, number>();
+  if (clientIds.length > 0) {
+    const { data: tickets } = await supabase
+      .from('tickets')
+      .select('id, client_id')
+      .in('client_id', clientIds);
+    (tickets ?? []).forEach((t: any) => {
+      ticketsByClient.set(t.client_id, (ticketsByClient.get(t.client_id) ?? 0) + 1);
+    });
+  }
+
+  return (users ?? []).map((u: any) => {
+    const profile: any = profileByUser.get(u.id);
+    return {
+      id: profile?.id ?? u.id,
+      user_id: u.id,
+      created_at: profile?.created_at ?? u.created_at,
+      name: u.name ?? 'Sem nome',
+      email: u.email ?? '',
+      ticketCount: profile ? (ticketsByClient.get(profile.id) ?? 0) : 0,
+      hasProfile: !!profile,
+    };
+  });
 }
 
 // Get dashboard metrics
@@ -56,7 +88,11 @@ export async function getAdminMetrics() {
 
   const ticketsWithAttendants = await attachAttendants(tickets ?? []);
 
-  const { data: clients } = await supabase.from('clients').select('id, created_at');
+  // Total de clientes = usuários com role 'client' (mesma fonte da página /admin/clients)
+  const { data: clientUsers } = await supabase
+    .from('users')
+    .select('id, created_at')
+    .eq('role', 'client');
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -65,8 +101,8 @@ export async function getAdminMetrics() {
   const abertos = ticketsWithAttendants.filter(t => t.status === 'aberto').length ?? 0;
   const andamento = ticketsWithAttendants.filter(t => t.status === 'em_atendimento' || t.status === 'andamento').length ?? 0;
   const concluidos = ticketsWithAttendants.filter(t => t.status === 'fechado' || t.status === 'concluido').length ?? 0;
-  const totalClientes = clients?.length ?? 0;
-  const novosClientes = clients?.filter(c => new Date(c.created_at) >= sevenDaysAgo).length ?? 0;
+  const totalClientes = clientUsers?.length ?? 0;
+  const novosClientes = clientUsers?.filter(c => new Date(c.created_at) >= sevenDaysAgo).length ?? 0;
 
   // High priority open tickets
   const highPriority = ticketsWithAttendants.filter(t => t.priority === 'alta' && t.status !== 'fechado' && t.status !== 'concluido').length ?? 0;
