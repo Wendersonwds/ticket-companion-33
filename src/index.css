@@ -97,6 +97,96 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Ocean theme — deep blue, modern */
+  .theme-ocean {
+    --background: 210 50% 8%;
+    --foreground: 200 30% 96%;
+
+    --card: 210 45% 12%;
+    --card-foreground: 200 30% 96%;
+
+    --popover: 210 45% 12%;
+    --popover-foreground: 200 30% 96%;
+
+    --primary: 195 90% 55%;
+    --primary-foreground: 210 50% 8%;
+
+    --secondary: 210 40% 18%;
+    --secondary-foreground: 200 30% 96%;
+
+    --muted: 210 40% 16%;
+    --muted-foreground: 200 15% 70%;
+
+    --accent: 195 80% 20%;
+    --accent-foreground: 195 90% 80%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 35% 20%;
+    --input: 210 35% 20%;
+    --ring: 195 90% 55%;
+
+    --success: 160 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 40 95% 55%;
+    --warning-foreground: 210 50% 8%;
+
+    --sidebar-background: 210 55% 6%;
+    --sidebar-foreground: 200 30% 92%;
+    --sidebar-primary: 195 90% 55%;
+    --sidebar-primary-foreground: 210 50% 8%;
+    --sidebar-accent: 210 45% 14%;
+    --sidebar-accent-foreground: 200 30% 96%;
+    --sidebar-border: 210 35% 18%;
+    --sidebar-ring: 195 90% 55%;
+  }
+
+  /* Sunset theme — purple & pink, modern */
+  .theme-sunset {
+    --background: 280 35% 10%;
+    --foreground: 320 20% 96%;
+
+    --card: 280 30% 14%;
+    --card-foreground: 320 20% 96%;
+
+    --popover: 280 30% 14%;
+    --popover-foreground: 320 20% 96%;
+
+    --primary: 330 85% 62%;
+    --primary-foreground: 280 35% 10%;
+
+    --secondary: 280 30% 20%;
+    --secondary-foreground: 320 20% 96%;
+
+    --muted: 280 25% 18%;
+    --muted-foreground: 300 15% 72%;
+
+    --accent: 270 60% 25%;
+    --accent-foreground: 330 85% 80%;
+
+    --destructive: 0 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 280 25% 22%;
+    --input: 280 25% 22%;
+    --ring: 330 85% 62%;
+
+    --success: 150 65% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 95% 60%;
+    --warning-foreground: 280 35% 10%;
+
+    --sidebar-background: 280 40% 8%;
+    --sidebar-foreground: 320 20% 92%;
+    --sidebar-primary: 330 85% 62%;
+    --sidebar-primary-foreground: 280 35% 10%;
+    --sidebar-accent: 280 30% 16%;
+    --sidebar-accent-foreground: 320 20% 96%;
+    --sidebar-border: 280 25% 20%;
+    --sidebar-ring: 330 85% 62%;
+  }
 }
 
 @layer base {

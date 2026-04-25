@@ -4,7 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/AdminSidebar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Shield } from 'lucide-react';
+import { Shield, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, loading, role, isRoleLoading } = useAuth();
@@ -34,6 +37,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <h1 className="text-lg font-semibold text-foreground">Painel Administrativo</h1>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Link to="/profile">
+                <Button variant="ghost" size="icon" aria-label="Meu perfil">
+                  <User className="h-4 w-4" />
+                </Button>
+              </Link>
               <span className="text-sm text-muted-foreground hidden sm:inline">{adminName}</span>
               <Avatar className="h-8 w-8 border border-primary/20">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
