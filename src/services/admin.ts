@@ -88,7 +88,11 @@ export async function getAdminMetrics() {
 
   const ticketsWithAttendants = await attachAttendants(tickets ?? []);
 
-  const { data: clients } = await supabase.from('clients').select('id, created_at');
+  // Total de clientes = usuários com role 'client' (mesma fonte da página /admin/clients)
+  const { data: clientUsers } = await supabase
+    .from('users')
+    .select('id, created_at')
+    .eq('role', 'client');
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -97,8 +101,8 @@ export async function getAdminMetrics() {
   const abertos = ticketsWithAttendants.filter(t => t.status === 'aberto').length ?? 0;
   const andamento = ticketsWithAttendants.filter(t => t.status === 'em_atendimento' || t.status === 'andamento').length ?? 0;
   const concluidos = ticketsWithAttendants.filter(t => t.status === 'fechado' || t.status === 'concluido').length ?? 0;
-  const totalClientes = clients?.length ?? 0;
-  const novosClientes = clients?.filter(c => new Date(c.created_at) >= sevenDaysAgo).length ?? 0;
+  const totalClientes = clientUsers?.length ?? 0;
+  const novosClientes = clientUsers?.filter(c => new Date(c.created_at) >= sevenDaysAgo).length ?? 0;
 
   // High priority open tickets
   const highPriority = ticketsWithAttendants.filter(t => t.priority === 'alta' && t.status !== 'fechado' && t.status !== 'concluido').length ?? 0;

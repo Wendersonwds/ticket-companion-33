@@ -4,7 +4,7 @@ import { getAdminClients } from '@/services/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, Ticket, Search, Mail, Calendar } from 'lucide-react';
+import { Users, Ticket, Search, Mail, Calendar, UserPlus, TicketCheck } from 'lucide-react';
 
 const AdminClients = () => {
   const [clients, setClients] = useState<any[]>([]);
