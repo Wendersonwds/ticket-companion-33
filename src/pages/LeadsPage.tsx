@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageCircle, Mail, Zap, Code2, ShoppingCart, Layout } from 'lucide-react';
+import { MessageCircle, Mail, Zap, Code2, ShoppingCart, Layout, Ticket } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '5511999999999'; // ajuste para o número real
 const CONTACT_EMAIL = 'contato@exemplo.com'; // ajuste para o email real
