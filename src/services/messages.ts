@@ -1,14 +1,15 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 export async function getMessages(ticketId: string) {
   const { data, error } = await supabase.from('ticket_messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
-  if (error) { console.log('Erro ao buscar mensagens:', error.message); return []; }
+  if (error) { logger.debug('Erro ao buscar mensagens:', error.message); return []; }
   return data ?? [];
 }
 
 export async function sendMessage(ticketId: string, senderId: string, message: string) {
   const { error } = await supabase.from('ticket_messages').insert({ ticket_id: ticketId, sender_id: senderId, message });
-  if (error) { console.log('Erro ao enviar mensagem:', error.message); throw error; }
+  if (error) { logger.debug('Erro ao enviar mensagem:', error.message); throw error; }
 }
 
 export function subscribeToMessages(ticketId: string, callback: (msg: any) => void) {

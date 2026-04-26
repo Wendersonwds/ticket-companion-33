@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { getAdminMetrics } from '@/services/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +37,7 @@ const AdminOverview = () => {
       const data = await getAdminMetrics();
       setMetrics(data);
     } catch (err) {
-      console.log('erro métricas:', err);
+      logger.debug('erro métricas:', err);
     } finally {
       setLoading(false);
     }

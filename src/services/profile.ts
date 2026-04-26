@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 export interface ProfileData {
   name: string;
@@ -22,7 +23,7 @@ function writeLocal(userId: string, extras: LocalExtras) {
 
 export async function getProfile(userId: string, email: string | undefined): Promise<ProfileData> {
   const { data, error } = await supabase.from('users').select('name').eq('id', userId).maybeSingle();
-  if (error) console.log('Erro ao buscar perfil:', error.message);
+  if (error) logger.debug('Erro ao buscar perfil:', error.message);
 
   // Try to fetch optional fields from clients (graceful if cols missing)
   let company = '';
@@ -32,7 +33,7 @@ export async function getProfile(userId: string, email: string | undefined): Pro
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
-  if (cErr) console.log('Erro ao buscar client:', cErr.message);
+  if (cErr) logger.debug('Erro ao buscar client:', cErr.message);
   if (client) {
     company = (client as any).company ?? '';
     avatar_url = (client as any).avatar_url ?? '';
@@ -55,7 +56,7 @@ export async function updateProfile(userId: string, profile: { name: string; com
   // 1. Update name in public.users
   const { error: uErr } = await supabase.from('users').update({ name: profile.name }).eq('id', userId);
   if (uErr) {
-    console.log('Erro ao atualizar nome:', uErr.message);
+    logger.debug('Erro ao atualizar nome:', uErr.message);
     throw new Error(uErr.message);
   }
 
@@ -67,7 +68,7 @@ export async function updateProfile(userId: string, profile: { name: string; com
     .eq('user_id', userId);
 
   if (cErr) {
-    console.log('Coluna ausente em clients, salvando localmente:', cErr.message);
+    logger.debug('Coluna ausente em clients, salvando localmente:', cErr.message);
     writeLocal(userId, { company: profile.company, avatar_url: profile.avatar_url });
   } else {
     // Clean local cache once persisted in DB
