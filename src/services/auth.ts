@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { ensureUserAndClientExist } from '@/services/ensureProfile';
 
 export async function signUp(email: string, password: string, name: string) {
   const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) { console.log('Erro no cadastro:', error.message); throw error; }
+  if (error) { logger.debug('Erro no cadastro:', error.message); throw error; }
 
   const userId = data.user?.id;
   if (!userId) throw new Error('User ID não encontrado');
@@ -21,7 +22,7 @@ export async function signUp(email: string, password: string, name: string) {
 
 export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { console.log('Erro no login:', error.message); throw error; }
+  if (error) { logger.debug('Erro no login:', error.message); throw error; }
 
   // Ensure profile records exist on login
   await ensureUserAndClientExist(data.user.id, data.user.email);
@@ -31,7 +32,7 @@ export async function signIn(email: string, password: string) {
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
-  if (error) console.log('Erro no logout:', error.message);
+  if (error) logger.debug('Erro no logout:', error.message);
 }
 
 export async function getSession() {

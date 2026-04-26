@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 /**
  * Ensures the authenticated user has records in public.users and public.clients.
@@ -14,19 +15,19 @@ export async function ensureUserAndClientExist(userId: string, email?: string): 
       .maybeSingle();
 
     if (selectUserErr) {
-      console.log('Erro ao buscar user:', selectUserErr.message);
+      logger.debug('Erro ao buscar user:', selectUserErr.message);
     }
 
     if (!existingUser) {
-      console.log('Usuário não encontrado em public.users, criando...');
+      logger.debug('Usuário não encontrado em public.users, criando...');
       const { error: insertUserErr } = await supabase
         .from('users')
         .insert({ id: userId, name: email ?? 'Usuário', role: 'client' });
 
       if (insertUserErr) {
-        console.log('Erro ao criar user:', insertUserErr.message);
+        logger.debug('Erro ao criar user:', insertUserErr.message);
       } else {
-        console.log('Usuário criado em public.users');
+        logger.debug('Usuário criado em public.users');
       }
     }
 
@@ -38,22 +39,22 @@ export async function ensureUserAndClientExist(userId: string, email?: string): 
       .maybeSingle();
 
     if (selectClientErr) {
-      console.log('Erro ao buscar client:', selectClientErr.message);
+      logger.debug('Erro ao buscar client:', selectClientErr.message);
     }
 
     if (!existingClient) {
-      console.log('Client não encontrado em public.clients, criando...');
+      logger.debug('Client não encontrado em public.clients, criando...');
       const { error: insertClientErr } = await supabase
         .from('clients')
         .insert({ user_id: userId });
 
       if (insertClientErr) {
-        console.log('Erro ao criar client:', insertClientErr.message);
+        logger.debug('Erro ao criar client:', insertClientErr.message);
       } else {
-        console.log('Client criado em public.clients');
+        logger.debug('Client criado em public.clients');
       }
     }
   } catch (err) {
-    console.log('Erro em ensureUserAndClientExist:', err);
+    logger.debug('Erro em ensureUserAndClientExist:', err);
   }
 }

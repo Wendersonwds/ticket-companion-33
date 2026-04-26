@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 async function attachAttendants(tickets: any[]) {
   const attendantIds = Array.from(new Set((tickets ?? []).map((t) => t.atendente_id).filter(Boolean)));
@@ -10,7 +11,7 @@ async function attachAttendants(tickets: any[]) {
     .in('id', attendantIds);
 
   if (error) {
-    console.log('Erro ao buscar atendentes:', error.message);
+    logger.debug('Erro ao buscar atendentes:', error.message);
     return tickets ?? [];
   }
 
@@ -27,7 +28,7 @@ export async function getAdminTickets() {
     .from('tickets')
     .select('*, clients(id, user_id, users:user_id(name))')
     .order('created_at', { ascending: false });
-  if (error) { console.log('Erro admin tickets:', error.message); return []; }
+  if (error) { logger.debug('Erro admin tickets:', error.message); return []; }
   return attachAttendants(data ?? []);
 }
 
@@ -39,7 +40,7 @@ export async function getAdminClients() {
     .select('id, name, email, created_at, role')
     .eq('role', 'client');
 
-  if (usersError) { console.log('Erro admin users:', usersError.message); return []; }
+  if (usersError) { logger.debug('Erro admin users:', usersError.message); return []; }
 
   const userIds = (users ?? []).map(u => u.id);
   if (userIds.length === 0) return [];
@@ -84,7 +85,7 @@ export async function getAdminMetrics() {
   const { data: tickets, error } = await supabase
     .from('tickets')
     .select('id, title, status, type, priority, created_at, client_id, atendente_id, clients(id, user_id, users:user_id(name))');
-  if (error) { console.log('Erro métricas:', error.message); return null; }
+  if (error) { logger.debug('Erro métricas:', error.message); return null; }
 
   const ticketsWithAttendants = await attachAttendants(tickets ?? []);
 
