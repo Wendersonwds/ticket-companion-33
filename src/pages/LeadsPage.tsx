@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageCircle, Mail, Zap, Code2, ShoppingCart, Layout } from 'lucide-react';
+import { MessageCircle, Mail, Zap, Code2, ShoppingCart, Layout, Ticket } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '5511999999999'; // ajuste para o número real
 const CONTACT_EMAIL = 'contato@exemplo.com'; // ajuste para o email real
@@ -33,18 +33,23 @@ const LeadsPage = () => {
           Fale conosco direto pelo WhatsApp ou e-mail. Sem cadastro, sem burocracia — só uma conversa rápida.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <Link to="/auth">
             <Button size="lg" className="w-full sm:w-auto">
-              <MessageCircle /> Falar no WhatsApp
+              <Ticket /> Abrir chamado
+            </Button>
+          </Link>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+              <MessageCircle /> WhatsApp
             </Button>
           </a>
           <a href={mailUrl}>
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              <Mail /> Enviar e-mail
+              <Mail /> E-mail
             </Button>
           </a>
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">Resposta normalmente em poucos minutos.</p>
+        <p className="mt-4 text-sm text-muted-foreground">Entre com Google em 1 clique — sem confirmar e-mail.</p>
       </section>
 
       {/* Serviços */}
@@ -64,11 +69,11 @@ const LeadsPage = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <Link to="/auth">
             <Button size="lg">
-              <MessageCircle /> Quero conversar agora
+              <Ticket /> Abrir chamado agora
             </Button>
-          </a>
+          </Link>
         </div>
       </section>
 
