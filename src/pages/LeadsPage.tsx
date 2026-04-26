@@ -69,11 +69,11 @@ const LeadsPage = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <Link to="/auth">
             <Button size="lg">
-              <MessageCircle /> Quero conversar agora
+              <Ticket /> Abrir chamado agora
             </Button>
-          </a>
+          </Link>
         </div>
       </section>
 
