@@ -33,18 +33,23 @@ const LeadsPage = () => {
           Fale conosco direto pelo WhatsApp ou e-mail. Sem cadastro, sem burocracia — só uma conversa rápida.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <Link to="/auth">
             <Button size="lg" className="w-full sm:w-auto">
-              <MessageCircle /> Falar no WhatsApp
+              <Ticket /> Abrir chamado
+            </Button>
+          </Link>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+              <MessageCircle /> WhatsApp
             </Button>
           </a>
           <a href={mailUrl}>
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              <Mail /> Enviar e-mail
+              <Mail /> E-mail
             </Button>
           </a>
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">Resposta normalmente em poucos minutos.</p>
+        <p className="mt-4 text-sm text-muted-foreground">Entre com Google em 1 clique — sem confirmar e-mail.</p>
       </section>
 
       {/* Serviços */}
