@@ -1,78 +1,80 @@
-import { useState } from 'react';
-import { createLead } from '@/services/leads';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { MessageCircle, Mail, Zap, Code2, ShoppingCart, Layout } from 'lucide-react';
+
+const WHATSAPP_NUMBER = '5511999999999'; // ajuste para o número real
+const CONTACT_EMAIL = 'contato@exemplo.com'; // ajuste para o email real
+
+const services = [
+  { icon: Layout, title: 'Sites', desc: 'Sites institucionais modernos e responsivos.' },
+  { icon: Zap, title: 'Landing Pages', desc: 'Páginas de alta conversão para suas campanhas.' },
+  { icon: Code2, title: 'Sistemas', desc: 'Sistemas web sob medida para o seu negócio.' },
+  { icon: ShoppingCart, title: 'E-commerce', desc: 'Lojas virtuais completas e otimizadas.' },
+];
 
 const LeadsPage = () => {
-  const { toast } = useToast();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', service_type: 'site', description: '', budget: '' });
-  const [submitting, setSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      await createLead(form);
-      setSent(true);
-      toast({ title: 'Solicitação enviada!' });
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
-    } finally { setSubmitting(false); }
-  };
-
-  if (sent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="py-12 space-y-4">
-            <p className="text-2xl font-bold text-foreground">✓ Enviado!</p>
-            <p className="text-muted-foreground">Entraremos em contato em breve.</p>
-            <Button variant="outline" onClick={() => { setSent(false); setForm({ name: '', email: '', phone: '', service_type: 'site', description: '', budget: '' }); }}>
-              Enviar outro
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Tenho interesse em um orçamento.')}`;
+  const mailUrl = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Orçamento')}`;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Solicite um Orçamento</h1>
-        <Link to="/auth"><Button variant="outline" size="sm">Login</Button></Link>
+        <h1 className="text-xl font-bold text-foreground">Sua Marca</h1>
+        <Link to="/auth"><Button variant="outline" size="sm">Área do cliente</Button></Link>
       </header>
-      <div className="flex items-center justify-center p-6">
-        <Card className="w-full max-w-lg">
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input placeholder="Nome" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-              <Input type="email" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
-              <Input placeholder="Telefone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} required />
-              <Select value={form.service_type} onValueChange={v => setForm(f => ({ ...f, service_type: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="site">Site</SelectItem>
-                  <SelectItem value="landing_page">Landing Page</SelectItem>
-                  <SelectItem value="sistema">Sistema</SelectItem>
-                  <SelectItem value="ecommerce">E-commerce</SelectItem>
-                </SelectContent>
-              </Select>
-              <Textarea placeholder="Descreva seu projeto" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} required />
-              <Input placeholder="Orçamento estimado (R$)" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} />
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? 'Enviando...' : 'Enviar Solicitação'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+
+      {/* Hero */}
+      <section className="px-6 py-16 md:py-24 max-w-5xl mx-auto text-center">
+        <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight">
+          Tire seu projeto do papel hoje mesmo
+        </h2>
+        <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto">
+          Fale conosco direto pelo WhatsApp ou e-mail. Sem cadastro, sem burocracia — só uma conversa rápida.
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <Button size="lg" className="w-full sm:w-auto">
+              <MessageCircle /> Falar no WhatsApp
+            </Button>
+          </a>
+          <a href={mailUrl}>
+            <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <Mail /> Enviar e-mail
+            </Button>
+          </a>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">Resposta normalmente em poucos minutos.</p>
+      </section>
+
+      {/* Serviços */}
+      <section className="px-6 pb-20 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {services.map(({ icon: Icon, title, desc }) => (
+            <Card key={title} className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="h-10 w-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-semibold text-foreground">{title}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{desc}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            <Button size="lg">
+              <MessageCircle /> Quero conversar agora
+            </Button>
+          </a>
+        </div>
+      </section>
+
+      <footer className="border-t bg-card px-6 py-6 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} — Todos os direitos reservados.
+      </footer>
     </div>
   );
 };
