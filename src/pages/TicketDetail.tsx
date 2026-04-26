@@ -295,13 +295,18 @@ const TicketDetail = () => {
               <CardContent className="space-y-2">
                 {attachments.length === 0 && <p className="text-xs text-muted-foreground">Nenhum anexo.</p>}
                 {attachments.map(a => (
-                  <a key={a.id} href={a.file_url} target="_blank" rel="noopener noreferrer"
+                  <a key={a.id} href={a.signed_url ?? a.file_url} target="_blank" rel="noopener noreferrer"
                     className="block text-sm text-primary underline truncate hover:opacity-80">
                     {a.file_name}
                   </a>
                 ))}
                 <Separator className="my-2" />
-                <Input type="file" onChange={handleUpload} className="text-xs" />
+                <Input
+                  type="file"
+                  onChange={handleUpload}
+                  className="text-xs"
+                  accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,application/zip,.doc,.docx,.xls,.xlsx"
+                />
               </CardContent>
             </Card>
 
