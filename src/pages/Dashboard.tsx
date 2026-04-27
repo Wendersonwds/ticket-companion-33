@@ -68,36 +68,36 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
       <header className="sticky top-0 z-30 glass border-b border-border/40">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
-              <Ticket className="h-5 w-5 text-primary-foreground" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
+              <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-foreground tracking-tight truncate">Meus Chamados</h1>
-              <p className="text-xs text-muted-foreground truncate">Olá, {userName} 👋</p>
+              <h1 className="text-sm sm:text-lg font-bold text-foreground tracking-tight truncate">Meus Chamados</h1>
+              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">Olá, {userName} 👋</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <Link to="/tickets/new">
-              <Button size="sm" className="gap-1.5 bg-gradient-primary hover:opacity-90 shadow-elegant transition-smooth">
+              <Button size="sm" className="gap-1.5 bg-gradient-primary hover:opacity-90 shadow-elegant transition-smooth h-9 px-2.5 sm:px-3">
                 <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Novo Chamado</span>
               </Button>
             </Link>
             <ThemeToggle />
             <Link to="/profile">
-              <Button variant="ghost" size="icon" aria-label="Meu perfil">
+              <Button variant="ghost" size="icon" aria-label="Meu perfil" className="h-9 w-9">
                 <User className="h-4 w-4" />
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate('/auth'); }} aria-label="Sair">
+            <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate('/auth'); }} aria-label="Sair" className="h-9 w-9">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-6 space-y-6">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Hero summary */}
         <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-card p-6 md:p-8 shadow-elegant">
           <div className="absolute inset-0 bg-gradient-hero opacity-70 pointer-events-none" />

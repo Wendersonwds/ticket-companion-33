@@ -30,16 +30,18 @@ const LeadsPage = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 glass border-b border-border/40">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
               <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Sua Marca</h1>
+            <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">Sua Marca</h1>
           </div>
           <Link to="/auth">
             <Button variant="outline" size="sm" className="gap-1.5">
-              Área do cliente <ArrowRight className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Área do cliente</span>
+              <span className="sm:hidden">Entrar</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>
@@ -48,31 +50,31 @@ const LeadsPage = () => {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-32 text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-border/60 glass px-3 py-1 text-xs font-medium text-muted-foreground mb-6">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 md:py-32 text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border/60 glass px-3 py-1 text-xs font-medium text-muted-foreground mb-5 sm:mb-6">
             <Star className="h-3 w-3 text-primary fill-primary" />
             Soluções digitais sob medida
           </div>
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.05]">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.05]">
             Tire seu projeto<br />
             <span className="text-gradient">do papel hoje mesmo</span>
           </h2>
-          <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
             Fale conosco direto pelo WhatsApp ou e-mail. Sem cadastro, sem burocracia — só uma conversa rápida.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/auth">
-              <Button size="lg" className="w-full sm:w-auto h-12 px-8 bg-gradient-primary hover:opacity-90 shadow-elegant transition-smooth">
+              <Button size="lg" className="w-full sm:w-auto h-12 px-6 sm:px-8 bg-gradient-primary hover:opacity-90 shadow-elegant transition-smooth">
                 <Ticket className="h-4 w-4" /> Abrir chamado
               </Button>
             </Link>
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto h-12 px-8 transition-smooth">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto h-12 px-6 sm:px-8 transition-smooth">
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </Button>
             </a>
             <a href={mailUrl}>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 transition-smooth">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-6 sm:px-8 transition-smooth">
                 <Mail className="h-4 w-4" /> E-mail
               </Button>
             </a>
@@ -81,18 +83,18 @@ const LeadsPage = () => {
       </section>
 
       {/* Serviços */}
-      <section className="px-6 py-20 max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+      <section className="px-4 sm:px-6 py-14 sm:py-20 max-w-6xl mx-auto">
+        <div className="text-center mb-10 sm:mb-12">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
             O que fazemos
           </h3>
-          <p className="mt-3 text-muted-foreground">Serviços completos para o seu negócio crescer online</p>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground">Serviços completos para o seu negócio crescer online</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {services.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="group relative rounded-2xl border border-border/60 bg-gradient-card p-6 shadow-soft hover:shadow-elegant hover:border-primary/30 hover:-translate-y-1 transition-spring"
+              className="group relative rounded-2xl border border-border/60 bg-gradient-card p-5 sm:p-6 shadow-soft hover:shadow-elegant hover:border-primary/30 hover:-translate-y-1 transition-spring"
             >
               <div className="h-11 w-11 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow mb-4 group-hover:scale-110 transition-spring">
                 <Icon className="h-5 w-5 text-primary-foreground" />
@@ -105,25 +107,25 @@ const LeadsPage = () => {
       </section>
 
       {/* Benefícios + CTA */}
-      <section className="px-6 pb-24 max-w-6xl mx-auto">
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-card p-10 md:p-16 shadow-elegant">
+      <section className="px-4 sm:px-6 pb-16 sm:pb-24 max-w-6xl mx-auto">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/60 bg-gradient-card p-6 sm:p-10 md:p-16 shadow-elegant">
           <div className="absolute inset-0 bg-gradient-hero opacity-60 pointer-events-none" />
-          <div className="relative grid md:grid-cols-2 gap-10 items-center">
+          <div className="relative grid md:grid-cols-2 gap-8 md:gap-10 items-center">
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
                 Pronto para começar?
               </h3>
-              <p className="mt-3 text-muted-foreground text-lg">
+              <p className="mt-2 sm:mt-3 text-muted-foreground text-base sm:text-lg">
                 Abra um chamado agora e nossa equipe entra em contato rapidamente.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
                 <Link to="/auth">
-                  <Button size="lg" className="w-full sm:w-auto h-12 px-8 bg-gradient-primary hover:opacity-90 shadow-elegant transition-smooth">
+                  <Button size="lg" className="w-full sm:w-auto h-12 px-6 sm:px-8 bg-gradient-primary hover:opacity-90 shadow-elegant transition-smooth">
                     <Ticket className="h-4 w-4" /> Abrir chamado
                   </Button>
                 </Link>
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 transition-smooth">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-6 sm:px-8 transition-smooth">
                     <MessageCircle className="h-4 w-4" /> Conversar
                   </Button>
                 </a>
