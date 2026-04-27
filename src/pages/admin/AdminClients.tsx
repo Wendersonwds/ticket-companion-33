@@ -29,7 +29,7 @@ const AdminClients = () => {
   const comTickets = clients.filter(c => (c.ticketCount ?? 0) > 0).length;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-4">
+    <div className="p-3 sm:p-6 max-w-6xl mx-auto space-y-4">
       <div>
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Users className="h-6 w-6" /> Clientes

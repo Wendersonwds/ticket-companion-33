@@ -76,30 +76,30 @@ const AdminOverview = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Visão Geral</h2>
-        <p className="text-sm text-muted-foreground">Acompanhe o desempenho do sistema em tempo real</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Visão Geral</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Acompanhe o desempenho do sistema em tempo real</p>
       </div>
 
       {/* Main KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
         {statCards.map((s) => (
           <Card key={s.label} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className={`h-8 w-8 rounded-lg ${s.bg} flex items-center justify-center mb-3`}>
-                <s.icon className={`h-4 w-4 ${s.color}`} />
+            <CardContent className="p-3 sm:p-4">
+              <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg ${s.bg} flex items-center justify-center mb-2 sm:mb-3`}>
+                <s.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${s.color}`} />
               </div>
-              <p className="text-2xl font-bold text-foreground">{s.value}</p>
-              <span className="text-xs text-muted-foreground">{s.label}</span>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{s.value}</p>
+              <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">{s.label}</span>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Secondary KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {kpiCards.map((k) => (
           <Card key={k.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">

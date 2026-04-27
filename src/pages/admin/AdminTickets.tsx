@@ -97,51 +97,51 @@ const AdminTickets = () => {
   if (loading) return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando...</div>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Chamados</h2>
-          <p className="text-sm text-muted-foreground">{filtered.length} resultado(s)</p>
-        </div>
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-3 sm:space-y-4">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Chamados</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">{filtered.length} resultado(s)</p>
       </div>
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
+            <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Buscar por título ou cliente..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+              <Input placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos Status</SelectItem>
-                <SelectItem value="aberto">Aberto</SelectItem>
-                <SelectItem value="andamento">Em Andamento</SelectItem>
-                <SelectItem value="concluido">Concluído</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Tipo" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos Tipos</SelectItem>
-                <SelectItem value="bug">Bug</SelectItem>
-                <SelectItem value="melhoria">Melhoria</SelectItem>
-                <SelectItem value="novo_projeto">Novo Projeto</SelectItem>
-                <SelectItem value="duvida">Dúvida</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Prioridade" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todas</SelectItem>
-                <SelectItem value="baixa">Baixa</SelectItem>
-                <SelectItem value="media">Média</SelectItem>
-                <SelectItem value="alta">Alta</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon" onClick={() => setSortOrder(s => s === 'desc' ? 'asc' : 'desc')} title="Ordenar">
+            <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-3">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos Status</SelectItem>
+                  <SelectItem value="aberto">Aberto</SelectItem>
+                  <SelectItem value="andamento">Em Andamento</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Tipo" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos Tipos</SelectItem>
+                  <SelectItem value="bug">Bug</SelectItem>
+                  <SelectItem value="melhoria">Melhoria</SelectItem>
+                  <SelectItem value="novo_projeto">Novo Projeto</SelectItem>
+                  <SelectItem value="duvida">Dúvida</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Prioridade" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todas</SelectItem>
+                  <SelectItem value="baixa">Baixa</SelectItem>
+                  <SelectItem value="media">Média</SelectItem>
+                  <SelectItem value="alta">Alta</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" size="icon" onClick={() => setSortOrder(s => s === 'desc' ? 'asc' : 'desc')} title="Ordenar" className="self-end sm:self-auto">
               <ArrowUpDown className="h-4 w-4" />
             </Button>
           </div>
@@ -155,34 +155,54 @@ const AdminTickets = () => {
           <p className="text-muted-foreground">Nenhum chamado encontrado.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filtered.map(t => {
             const sc = statusConfig[t.status] ?? statusConfig.aberto;
             const pc = priorityConfig[t.priority];
+            const isMine = t.atendente_id === user?.id;
+            const isClosed = t.status === 'fechado' || t.status === 'concluido';
             return (
               <Card key={t.id} className="hover:shadow-md transition-all hover:border-primary/20">
-                <CardContent className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                  <Link to={`/tickets/${t.id}`} className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">{t.title}</p>
-                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span className="font-medium">{getClientName(t)}</span>
-                      <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {new Date(t.created_at).toLocaleDateString('pt-BR')}</span>
-                      <span className="inline-flex items-center gap-1"><UserCheck className="h-3 w-3" /> {getAttendantName(t)}</span>
+                <CardContent className="p-3 sm:p-4 space-y-3">
+                  {/* Header info */}
+                  <Link to={`/tickets/${t.id}`} className="block min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <p className="font-semibold text-foreground text-sm sm:text-base leading-snug line-clamp-2 flex-1">{t.title}</p>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <Badge className={`${sc.color} text-[10px] sm:text-xs`}>{sc.label}</Badge>
+                        {pc && <Badge className={`${pc.color} text-[10px] sm:text-xs`}>{pc.label}</Badge>}
+                      </div>
                     </div>
-                    {t.atendente_id === user?.id && <p className="text-xs font-medium text-primary mt-1">Em atendimento por você</p>}
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] sm:text-xs text-muted-foreground">
+                      <span className="font-medium truncate max-w-[160px]">{getClientName(t)}</span>
+                      <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {new Date(t.created_at).toLocaleDateString('pt-BR')}</span>
+                      <span className="inline-flex items-center gap-1 truncate max-w-[160px]"><UserCheck className="h-3 w-3" /> {getAttendantName(t)}</span>
+                    </div>
+                    {isMine && <p className="text-[11px] sm:text-xs font-medium text-primary mt-1.5">✓ Em atendimento por você</p>}
                   </Link>
-                  <div className="flex gap-2 items-center flex-shrink-0 flex-wrap">
-                    <Badge className={sc.color}>{sc.label}</Badge>
-                    {pc && <Badge className={pc.color}>{pc.label}</Badge>}
-                    <Button size="lg" className="gap-2 h-12 px-5 font-bold uppercase tracking-wide shadow-sm" disabled={actionLoading === t.id || t.status === 'fechado' || (t.atendente_id && t.atendente_id !== user?.id)} onClick={() => handleAttend(t.id)}>
+
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-border/50">
+                    <Button
+                      size="sm"
+                      className="flex-1 gap-2 font-medium"
+                      disabled={actionLoading === t.id || isClosed || (t.atendente_id && !isMine)}
+                      onClick={() => handleAttend(t.id)}
+                    >
                       <Headphones className="h-4 w-4" />
-                      {actionLoading === t.id ? 'Aguarde...' : t.atendente_id === user?.id ? 'Em atendimento por você' : 'Atender chamado'}
+                      {actionLoading === t.id ? 'Aguarde...' : isMine ? 'Atendendo' : 'Atender'}
                     </Button>
-                    <Button variant="outline" className="gap-2" disabled={actionLoading === t.id || t.status === 'fechado'} onClick={() => handleClose(t.id)}>
-                      <Lock className="h-4 w-4" /> Fechar chamado
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 gap-2"
+                      disabled={actionLoading === t.id || isClosed}
+                      onClick={() => handleClose(t.id)}
+                    >
+                      <Lock className="h-4 w-4" /> Fechar
                     </Button>
                     <Select value={t.status === 'andamento' ? 'em_atendimento' : t.status === 'concluido' ? 'fechado' : t.status} onValueChange={(val) => handleStatusChange(t.id, val)}>
-                      <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full sm:w-36 h-9 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="aberto">Aberto</SelectItem>
                         <SelectItem value="em_atendimento">Em Atendimento</SelectItem>
