@@ -31,19 +31,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b bg-card px-4 flex-shrink-0">
-            <div className="flex items-center gap-3">
+          <header className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-3 sm:px-4 flex-shrink-0 sticky top-0 z-30">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold text-foreground">Painel Administrativo</h1>
+              <h1 className="text-sm sm:text-lg font-semibold text-foreground truncate">
+                <span className="hidden sm:inline">Painel Administrativo</span>
+                <span className="sm:hidden">Admin</span>
+              </h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <ThemeToggle />
               <Link to="/profile">
-                <Button variant="ghost" size="icon" aria-label="Meu perfil">
+                <Button variant="ghost" size="icon" aria-label="Meu perfil" className="h-8 w-8 sm:h-9 sm:w-9">
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
-              <span className="text-sm text-muted-foreground hidden sm:inline">{adminName}</span>
+              <span className="text-sm text-muted-foreground hidden md:inline truncate max-w-[120px]">{adminName}</span>
               <Avatar className="h-8 w-8 border border-primary/20">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                   <Shield className="h-3.5 w-3.5" />
