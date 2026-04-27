@@ -30,16 +30,18 @@ const LeadsPage = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 glass border-b border-border/40">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
               <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Sua Marca</h1>
+            <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">Sua Marca</h1>
           </div>
           <Link to="/auth">
             <Button variant="outline" size="sm" className="gap-1.5">
-              Área do cliente <ArrowRight className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Área do cliente</span>
+              <span className="sm:hidden">Entrar</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>
